@@ -1,8 +1,8 @@
+import {LinkContainer} from 'react-router-bootstrap'
+
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 
@@ -11,20 +11,47 @@ function Header(){
 
     return(
 
-        <div>
+        <Navbar bg="dark" expand="md" variant = "dark" className="fs-5">
+          <Container>
+            
+            <LinkContainer to = "/">
+                <Navbar.Brand>
+                        <img
+                        alt=""
+                        src="/images/"
+                        width="30"
+                        height="30"
+                        className="d-inline-block align-top"
+                        />{' '}
+                        Team Space Interactive
+                </Navbar.Brand>
 
-        <Navbar bg = "light">
+           </LinkContainer>
 
-            <Container>
+       
+            <Nav className="me-auto"> {/* This creates to the start of the navbar */}
 
-                <Navbar.Brand href = "#home">Brand Link</Navbar.Brand>
+                <Nav.Link>About</Nav.Link>
+                <Nav.Link>Contact</Nav.Link>
 
-            </Container>
+            </Nav>
 
+            <Nav className = "ms-auto"> {/* This align more towards the end of the navbar */}
 
-        </Navbar>
+                <LinkContainer to = "/Register">
+                    <Nav.Link>Sign Up</Nav.Link>
+                </LinkContainer>
 
-        </div>
+                <LinkContainer to = "/Login">
+                    <Nav.Link>Log In</Nav.Link>
+
+                </LinkContainer>
+
+            </Nav>
+
+      </Container>
+    </Navbar>
+
 
     )
 
