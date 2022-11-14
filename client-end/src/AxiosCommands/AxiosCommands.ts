@@ -19,7 +19,7 @@ type CreateUser = {
 
 
 export async function createUser(user: CreateUser){
-    const response = await axios.post(API_HOST + "/api/users", user);
+    const response = await axios.post(API_HOST + "/users", user);
 
     return response.data
 

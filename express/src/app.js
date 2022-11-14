@@ -51,6 +51,14 @@ app_data_source_1.myDataSource
 // create and setup express app
 var app = express();
 app.use(express.json());
+var cors = require('cors');
+var corsOptions = {
+    origin: 'http://localhost:3000',
+    credentials: true,
+    optionSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+var argon2 = require('argon2');
 // register routes
 app.get("/users", function (req, res) {
     return __awaiter(this, void 0, void 0, function () {
@@ -81,14 +89,18 @@ app.get("/users/:id", function (req, res) {
 });
 app.post("/users", function (req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var user, results;
+        var hash, user, results;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).create(req.body)];
+                case 0: return [4 /*yield*/, argon2.hash(req.body.password)];
                 case 1:
+                    hash = _a.sent();
+                    req.body.password = hash;
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).create(req.body)];
+                case 2:
                     user = _a.sent();
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).save(user)];
-                case 2:
+                case 3:
                     results = _a.sent();
                     return [2 /*return*/, res.send(results)];
             }

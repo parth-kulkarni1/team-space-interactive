@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import { Validation } from './Validation';
 
 import './Registration.css'
+import { createUser } from '../../AxiosCommands/AxiosCommands';
 
 function Registration(){
 
@@ -61,6 +62,8 @@ function Registration(){
             // Now we store the data in the backend and and then procced to navigate the user forward.. 
 
             console.log("succedding")
+
+            await createUser(user)
 
         }
 

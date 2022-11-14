@@ -15,9 +15,9 @@ var User = /** @class */ (function () {
     function User() {
     }
     __decorate([
-        (0, typeorm_1.PrimaryGeneratedColumn)(),
-        __metadata("design:type", Number)
-    ], User.prototype, "id", void 0);
+        (0, typeorm_1.PrimaryColumn)(),
+        __metadata("design:type", String)
+    ], User.prototype, "email", void 0);
     __decorate([
         (0, typeorm_1.Column)(),
         __metadata("design:type", String)
@@ -26,6 +26,10 @@ var User = /** @class */ (function () {
         (0, typeorm_1.Column)(),
         __metadata("design:type", String)
     ], User.prototype, "lastName", void 0);
+    __decorate([
+        (0, typeorm_1.Column)(),
+        __metadata("design:type", String)
+    ], User.prototype, "password", void 0);
     User = __decorate([
         (0, typeorm_1.Entity)()
     ], User);
