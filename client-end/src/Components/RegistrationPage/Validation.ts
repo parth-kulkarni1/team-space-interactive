@@ -1,10 +1,23 @@
-        
-export function Validation(user: any, UserErrors: any){
+import { createUser, findUser } from '../../AxiosCommands/AxiosCommands';
+
+type UserDefined = {
+    email: string, 
+    firstName: string, 
+    lastName: string,
+    password: string
+}
+
+
+export async function Validation(user: UserDefined){
+
+
+       const ErrorsObj = { emailError: "",
+                        firstNameError: "",
+                        lastNameError: "",
+                        passwordError: "",
+                        validationSuccess: false}
+
     
-        const ErrorsObj: typeof UserErrors = { emailError: "",
-        firstNameError: "",
-        lastNameError: "",
-        passwordError: ""}
 
         if(user.email.length === 0){
             ErrorsObj.emailError = 'Email not provided!'
@@ -12,6 +25,14 @@ export function Validation(user: any, UserErrors: any){
 
         else if (user.email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/) == null){
             ErrorsObj.emailError = 'Email Formatting is incorrect'
+        }
+
+        else{
+            const results = await findUser(user.email);
+
+            if (results !== null){
+                ErrorsObj.emailError = 'This Email Already Exists'
+            }
         }
 
 
@@ -41,6 +62,18 @@ export function Validation(user: any, UserErrors: any){
         }
 
 
+        if ((ErrorsObj).emailError === '' && (ErrorsObj).firstNameError === '' && (ErrorsObj).lastNameError === '' 
+        && (ErrorsObj).passwordError === ''){ 
+
+            ErrorsObj.validationSuccess = true;
+
+        }
+
+        console.log(ErrorsObj, "before retunting")
+
+
         return ErrorsObj
 
     }
+
+

@@ -1,13 +1,18 @@
 import * as express from "express"
-import { Request, Response } from "express"
-import { User } from "./entity/user"
 import { myDataSource } from "./app-data-source"
+import { router } from "./routes/UserRoute"
+import session = require('express-session');
+import { SessionData, Store, MemoryStore, Session } from 'express-session';
+import * as argon2 from "argon2";
+require('dotenv').config()
+
+
 
 // establish database connection
 myDataSource
     .initialize()
     .then(() => {
-        console.log("Data Source has been initialized!")
+        console.log("Data Source has been initialized!xzK")
     })
     .catch((err) => {
         console.error("Error during Data Source initialization:", err)
@@ -15,7 +20,22 @@ myDataSource
 
 // create and setup express app
 const app = express()
+
 app.use(express.json())
+
+
+app.use(
+    session({
+        secret: process.env.EXPRESS_SECERT,
+        saveUninitialized: false, // Sets a cookie in the browser by default .. true for now
+        cookie: { httpOnly: true, maxAge: parseInt(process.env.MAX_AGE), secure: 'auto', sameSite: 'strict'},
+        resave: false, 
+    }),
+);
+
+app.set('trust proxy', 1)
+
+
 
 const cors = require('cors');
 const corsOptions ={
@@ -25,47 +45,9 @@ const corsOptions ={
 }
 app.use(cors(corsOptions));
 
-const argon2 = require('argon2');
+app.use(router)
 
-
-
-// register routes
-app.get("/users", async function (req: Request, res: Response) {
-    const users = await myDataSource.getRepository(User).find()
-    res.json(users)
-})
-
-app.get("/users/:id", async function (req: Request, res: Response) {
-    const results = await myDataSource.getRepository(User).findOneBy({
-    })
-    return res.send(results)
-})
-
-app.post("/users", async function (req: Request, res: Response) {
-
-    const hash: string = await argon2.hash(req.body.password)
-
-    req.body.password = hash;
-
-    const user = await myDataSource.getRepository(User).create(req.body)
-
-    const results = await myDataSource.getRepository(User).save(user)
-    return res.send(results)
-})
-
-app.put("/users/:id", async function (req: Request, res: Response) {
-    const user = await myDataSource.getRepository(User).findOneBy({
-    })
-    myDataSource.getRepository(User).merge(user, req.body)
-    const results = await myDataSource.getRepository(User).save(user)
-    return res.send(results)
-})
-
-app.delete("/users/:id", async function (req: Request, res: Response) {
-    const results = await myDataSource.getRepository(User).delete(req.params.id)
-    return res.send(results)
-})
 
 
 // start express server
-app.listen(4000)
+app.listen(4000, () => console.log("Running Express On 4000"))

@@ -1,11 +1,13 @@
-import { SetStateAction, useState } from 'react';
+import {useState, useContext, useEffect} from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
 import { Validation } from './Validation';
 
 import './Registration.css'
-import { createUser } from '../../AxiosCommands/AxiosCommands';
+import { createUser} from '../../AxiosCommands/AxiosCommands';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
+import { UserContext } from '../UserContext/UserContext';
 
 function Registration(){
 
@@ -19,33 +21,72 @@ function Registration(){
     const UserDefined: UserGeneric = {
         email: "",
         firstName: "",
-        lastName: "",
+        lastName: "" ,
         password: ""
     } 
-
 
     type UserErrors = {
         emailError: string, 
         firstNameError: string, 
         lastNameError: string, 
-        passwordError: string
+        passwordError: string, 
+        validationSuccess: boolean
     }
 
     const UserErrorsDefined: UserErrors = {
         emailError: "",
         firstNameError: "",
         lastNameError: "",
-        passwordError: ""
-    }
+        passwordError: "",
+        validationSuccess: false
+    } 
+
+
 
     const[user, setUser] = useState(UserDefined); // Initalise the state with null
     const[error, setError] = useState(UserErrorsDefined);
+    const navigate: NavigateFunction = useNavigate();
+    const userContext = useContext(UserContext);
+
+
+    useEffect(() => {
+
+
+        async function handleNavigation() {
+    
+    
+        if (error.validationSuccess === true){    
+
+                const response = await createUser(user); 
+
+                if('errors' in response){ // Ensure if there is an error in the backend it does not navigate the user forward..(Security Implementation)
+                    return
+                }
+
+                userContext?.setUser({
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    loggedIn: true
+                })
+
+                navigate("/Profile")
+
+        }
+
+        }
+
+        handleNavigation();
+
+    }, [error])
+
+
+
 
     function handleChange <P extends keyof UserGeneric>(prop: P, value: UserGeneric[P] ){
 
         setUser({ ...user, [prop]: value });
     }
-
 
 
    async function handleSumbit(event: React.FormEvent<HTMLFormElement>){
@@ -54,28 +95,14 @@ function Registration(){
 
         event.preventDefault();
 
-        const ErrorsObj: UserErrors = Validation(user, UserErrorsDefined)
+        const ErrorsObj = await Validation(user)
 
-
-        if (ErrorsObj.emailError === '' && ErrorsObj.firstNameError === '' && ErrorsObj.lastNameError === '' && ErrorsObj.passwordError === ''){
-
-            // Now we store the data in the backend and and then procced to navigate the user forward.. 
-
-            console.log("succedding")
-
-            await createUser(user)
-
-        }
-
-        else{            
-            setError(ErrorsObj)
-        }
-
-
+        setError(ErrorsObj)
 
     }
 
     return(
+
 
         <div>
             
@@ -88,9 +115,10 @@ function Registration(){
 
                     <Form.Label>Email Address</Form.Label>
                     <Form.Control className = "form-input" type = "email" placeholder = "Please Provide A Valid Email" size = "lg" onChange = {(e) => {handleChange("email", e.target.value)}}></Form.Control>
-                    <Form.Text className = "text-muted">
 
-                        {error?.emailError ? error.emailError : ""}
+                    <Form.Text className = "text-danger">
+
+                        {error.emailError}
                     
                     </Form.Text>
 
@@ -102,9 +130,9 @@ function Registration(){
                     <Form.Label>First Name</Form.Label>
                     <Form.Control className = "form-input" type = "text" placeholder = "Please Provide Your First Name" size = "lg" onChange = {(e) => {handleChange("firstName", e.target.value)}}></Form.Control>
 
-                    <Form.Text className = "text-muted">
+                    <Form.Text className = "text-danger">
 
-                        {error?.firstNameError ? error.firstNameError : ""}
+                        {error.firstNameError}
                     
                     </Form.Text>
 
@@ -117,9 +145,9 @@ function Registration(){
                     <Form.Label>Last Name</Form.Label>
                     <Form.Control className = "form-input" type = "text" placeholder = "Please Provide Your Last Name" size = "lg" onChange = {(e) => {handleChange("lastName", e.target.value)}}></Form.Control>
 
-                    <Form.Text className = "text-muted">
+                    <Form.Text className = "text-danger">
 
-                        {error?.lastNameError ? error.lastNameError : ""}
+                        {error.lastNameError}
                     
                     </Form.Text>
                                     
@@ -131,8 +159,8 @@ function Registration(){
 
                     <Form.Label>Password</Form.Label>
                     <Form.Control className = "form-input" type = "password" placeholder = "Please Provide A Password" size = "lg" onChange = {(e) => {handleChange("password", e.target.value)}}></Form.Control>
-                    <Form.Text className = "text-muted">
-                    {error?.passwordError? error.passwordError : ""}
+                    <Form.Text className = "text-danger">
+                    {error.passwordError}
                     </Form.Text>
                                     
                 </Form.Group>

@@ -18,7 +18,7 @@ function Footer(){
 
                 <div className="d-flex">
 
-                    <img src="./logo192.png" alt="" height={80}></img>
+                    <img src="./logo.png" alt="" height={80}></img>
 
                 </div>
 
