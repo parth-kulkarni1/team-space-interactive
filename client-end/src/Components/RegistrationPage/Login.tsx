@@ -5,20 +5,17 @@ import { NavigateFunction, useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
+import { UserLogin } from '../Types/UserTypes';
 import { verifyUser } from '../../AxiosCommands/AxiosCommands';
 import {UserContext} from '../UserContext/UserContext';
+
 
 function Login(){
 
     const userContext = useContext(UserContext); // Consume the Context
-    
 
-    type UserGeneric = {
-        email: string, 
-        password: string
-    }
 
-    const UserDefined: UserGeneric = {
+    const UserDefined: UserLogin = {
         email: "",
         password: ""
     } 
@@ -28,7 +25,7 @@ function Login(){
     const[error, setError] = useState("");
     const navigate: NavigateFunction = useNavigate();
 
-    function handleChange <P extends keyof UserGeneric>(prop: P, value: UserGeneric[P] ){
+    function handleChange <P extends keyof UserLogin>(prop: P, value: UserLogin[P] ){
 
         setUser({ ...user, [prop]: value });
     }

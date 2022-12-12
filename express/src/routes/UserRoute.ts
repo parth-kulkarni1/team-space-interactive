@@ -143,7 +143,7 @@ rootRouter.post("/users",  body('email', 'Invalid Email Provided').isEmail().cus
 rootRouter.get("/users", async function (req: Request, res: Response){
 
     if(req.session.user){
-        res.send({loggedIn: true, user: req.session.user})
+        res.send({loggedIn: true, firstName: req.session.user.firstName, lastName: req.session.user.lastName, email: req.session.user.email})
     }
 
     else{

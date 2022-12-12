@@ -18,13 +18,6 @@ function Footer(){
 
                 <div className="d-flex">
 
-                    <img src="./logo.png" alt="" height={80}></img>
-
-                </div>
-
-
-                <div className="d-flex">
-
                     <p className = "text-white"> © 2022 Copyright: Team Space Interactive</p>
 
                 </div>

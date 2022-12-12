@@ -8,30 +8,19 @@ import './Registration.css'
 import { createUser} from '../../AxiosCommands/AxiosCommands';
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext/UserContext';
+import {User, UserErrors} from "../Types/UserTypes";
 
 function Registration(){
 
-    type UserGeneric = {
-        email: string, 
-        firstName: string, 
-        lastName: string,
-        password: string
-    }
 
-    const UserDefined: UserGeneric = {
+    const UserDefined: User = {
         email: "",
         firstName: "",
         lastName: "" ,
-        password: ""
+        password: "", 
+        loggedIn: false
     } 
 
-    type UserErrors = {
-        emailError: string, 
-        firstNameError: string, 
-        lastNameError: string, 
-        passwordError: string, 
-        validationSuccess: boolean
-    }
 
     const UserErrorsDefined: UserErrors = {
         emailError: "",
@@ -67,7 +56,7 @@ function Registration(){
                     email: user.email,
                     firstName: user.firstName,
                     lastName: user.lastName,
-                    loggedIn: true
+                    loggedIn: true,
                 })
 
                 navigate("/Profile")
@@ -83,7 +72,7 @@ function Registration(){
 
 
 
-    function handleChange <P extends keyof UserGeneric>(prop: P, value: UserGeneric[P] ){
+    function handleChange <P extends keyof User>(prop: P, value: User[P] ){
 
         setUser({ ...user, [prop]: value });
     }

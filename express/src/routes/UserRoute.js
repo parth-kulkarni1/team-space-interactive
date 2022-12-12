@@ -167,7 +167,7 @@ rootRouter.get("/users", function (req, res) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             if (req.session.user) {
-                res.send({ loggedIn: true, user: req.session.user });
+                res.send({ loggedIn: true, firstName: req.session.user.firstName, lastName: req.session.user.lastName, email: req.session.user.email });
             }
             else {
                 res.send({ loggedIn: false });

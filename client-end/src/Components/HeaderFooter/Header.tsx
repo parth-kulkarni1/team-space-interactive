@@ -1,75 +1,27 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext} from "react";
 import {LinkContainer} from 'react-router-bootstrap'
 import { UserContext } from '../UserContext/UserContext';
 
 
-import { findCookie, logoutUser } from "../../AxiosCommands/AxiosCommands";
+import {logoutUser } from "../../AxiosCommands/AxiosCommands";
 
 
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import {useNavigate } from "react-router-dom";
 
 
 function Header(){
 
 
-    type User = {
-        email: string, 
-        firstName: string, 
-        lastName: string, 
-        password: string
-    }
-
-
-    type Cookie = {
-        loggedIn: boolean, 
-        user: User
-
-    }
-
     const user = useContext(UserContext)
-
-    const navigate = useNavigate();
-
-    const [loggedIn, setLoggedIn] = useState(false);
-
-    const [cookie, setCookie] = useState<Cookie | null>(null);
-
-    useEffect(() =>{
-
-        async function InitaliseCookie(){
-
-        const userData: Cookie = await findCookie(); // find the cookie and see if it's present
-
-
-        if (userData.loggedIn === false){
-            setLoggedIn(false)
-        }
-
-        else{
-            setLoggedIn(true)
-            setCookie(userData)
-        }
-
-        }
-
-
-        InitaliseCookie();
-
-
-    }, [user])
-
 
 
     async function handleLogout(){
 
         await logoutUser();
 
-        setCookie(null)
-        setLoggedIn(false)
-
+        user?.setUser(null)
         
     }
 
@@ -93,7 +45,7 @@ function Header(){
             <Nav className = "ms-auto"> {/* This align more towards the end of the navbar */}
 
 
-                {loggedIn === false &&
+                {user?.user?.loggedIn === undefined &&
 
                 <React.Fragment>
 
@@ -112,7 +64,7 @@ function Header(){
                 }
 
 
-                {loggedIn === true &&
+                {user?.user?.loggedIn === true &&
 
                 <React.Fragment>
 
@@ -125,7 +77,7 @@ function Header(){
                 </LinkContainer>
 
                 <LinkContainer to = "/Login">
-                    <Nav.Link>Welcome - {cookie?.user.firstName}</Nav.Link>
+                    <Nav.Link>Welcome - {user?.user.firstName}</Nav.Link>
                 </LinkContainer>
 
             
