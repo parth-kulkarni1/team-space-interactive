@@ -9,6 +9,7 @@ import { createUser} from '../../AxiosCommands/AxiosCommands';
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext/UserContext';
 import {User, UserErrors} from "../Types/UserTypes";
+import {toast} from "react-toastify"
 
 function Registration(){
 
@@ -18,7 +19,9 @@ function Registration(){
         firstName: "",
         lastName: "" ,
         password: "", 
-        loggedIn: false
+        loggedIn: false,
+        cover_background: "",
+        profile_background: ""
     } 
 
 
@@ -46,17 +49,24 @@ function Registration(){
     
         if (error.validationSuccess === true){    
 
-                const response = await createUser(user); 
+                const response = await toast.promise(createUser(user), {
+                    pending: 'Signing you up...',
+                    success: 'You have signed up successfully', 
+                    error: 'Something has gone wrong..'
+
+                }); 
 
                 if('errors' in response){ // Ensure if there is an error in the backend it does not navigate the user forward..(Security Implementation)
                     return
                 }
 
-                userContext?.setUser({
+                userContext.setUser({
                     email: user.email,
                     firstName: user.firstName,
                     lastName: user.lastName,
                     loggedIn: true,
+                    cover_background: response.cover_background,
+                    profile_background: response.profile_background
                 })
 
                 navigate("/Profile")
@@ -98,18 +108,25 @@ function Registration(){
         <h3 className = "text-center mt-3">Registration Form</h3>
 
 
-            <Form className='d-flex flex-column p-5' onSubmit = {handleSumbit}>
+            <Form noValidate className='d-flex flex-column p-5' onSubmit = {handleSumbit}>
 
                 <Form.Group className = "mb-3" controlId = "emailForm">
 
                     <Form.Label>Email Address</Form.Label>
-                    <Form.Control className = "form-input" type = "email" placeholder = "Please Provide A Valid Email" size = "lg" onChange = {(e) => {handleChange("email", e.target.value)}}></Form.Control>
+                    <Form.Control 
+                        className = "form-input" 
+                        type = "email" 
+                        placeholder = "Please Provide A Valid Email" 
+                        size = "lg" 
+                        onChange = {(e) => {handleChange("email", e.target.value)}}
+                        isInvalid = {!!error.emailError}
+                        isValid = {!error.emailError && error.emailError !== ''}>
 
-                    <Form.Text className = "text-danger">
+                    </Form.Control>
 
-                        {error.emailError}
                     
-                    </Form.Text>
+                    <Form.Control.Feedback type = "invalid">{error.emailError}</Form.Control.Feedback>
+                    <Form.Control.Feedback type = "valid">Looks good</Form.Control.Feedback>
 
                 </Form.Group>
 
@@ -117,29 +134,39 @@ function Registration(){
                 <Form.Group className = "mb-3" controlId = "firstNameForm">
 
                     <Form.Label>First Name</Form.Label>
-                    <Form.Control className = "form-input" type = "text" placeholder = "Please Provide Your First Name" size = "lg" onChange = {(e) => {handleChange("firstName", e.target.value)}}></Form.Control>
+                    <Form.Control 
+                        className = "form-input" 
+                        type = "text" 
+                        placeholder = "Please Provide Your First Name" 
+                        size = "lg" 
+                        onChange = {(e) => {handleChange("firstName", e.target.value)}}
+                        isInvalid = {!!error.firstNameError}
+                        isValid = {!error.firstNameError && error.firstNameError !== ''}>
 
-                    <Form.Text className = "text-danger">
-
-                        {error.firstNameError}
+                    </Form.Control>
                     
-                    </Form.Text>
+                    <Form.Control.Feedback type = "invalid">{error.firstNameError}</Form.Control.Feedback>
+                    <Form.Control.Feedback type = "valid">Looks good</Form.Control.Feedback>
 
-                                    
                 </Form.Group>
 
                 
                 <Form.Group className = "mb-3" controlId = "lastNameForm">
 
                     <Form.Label>Last Name</Form.Label>
-                    <Form.Control className = "form-input" type = "text" placeholder = "Please Provide Your Last Name" size = "lg" onChange = {(e) => {handleChange("lastName", e.target.value)}}></Form.Control>
+                    <Form.Control 
+                        className = "form-input" 
+                        type = "text" 
+                        placeholder = "Please Provide Your Last Name777" 
+                        size = "lg" 
+                        onChange = {(e) => {handleChange("lastName", e.target.value)}}
+                        isInvalid = {!!error.lastNameError}
+                        isValid = {!error.lastNameError && error.lastNameError !== ''}>
+                    </Form.Control>
 
-                    <Form.Text className = "text-danger">
-
-                        {error.lastNameError}
+                    <Form.Control.Feedback type = "invalid"> {error.lastNameError}</Form.Control.Feedback>
+                    <Form.Control.Feedback type = "valid">Looks good</Form.Control.Feedback>
                     
-                    </Form.Text>
-                                    
                 </Form.Group>
 
 
@@ -147,10 +174,20 @@ function Registration(){
                 <Form.Group className = "mb-3" controlId = "passwordForm">
 
                     <Form.Label>Password</Form.Label>
-                    <Form.Control className = "form-input" type = "password" placeholder = "Please Provide A Password" size = "lg" onChange = {(e) => {handleChange("password", e.target.value)}}></Form.Control>
-                    <Form.Text className = "text-danger">
-                    {error.passwordError}
-                    </Form.Text>
+                    <Form.Control 
+                        className = "form-input" 
+                        type = "password" 
+                        placeholder = "Please Provide A Password" 
+                        size = "lg" 
+                        onChange = {(e) => {handleChange("password", e.target.value)}}
+                        isInvalid = {!!error.passwordError}
+                        isValid = {!error.passwordError && error.passwordError !== ''}>
+
+                    </Form.Control>
+
+                    <Form.Control.Feedback type = "invalid">{error.passwordError}</Form.Control.Feedback>
+                    <Form.Control.Feedback type = "valid">Looks good</Form.Control.Feedback>
+
                                     
                 </Form.Group>
 

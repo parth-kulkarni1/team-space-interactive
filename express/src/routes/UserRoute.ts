@@ -1,8 +1,13 @@
-import { Router, Request, Response, json, query } from "express";
+import { Router, Request, Response, json, query, NextFunction } from "express";
 import { myDataSource } from "../app-data-source"
 import { User } from "../entity/user";
 import { body, validationResult, CustomValidator, param, check} from 'express-validator';
-import {Session} from 'express-session'; declare module 'express-session' { interface Session { user: {firstName: string, lastName: string, email: string}; } }
+import {Session} from 'express-session'; declare module 'express-session' { interface Session { user: {firstName: string, lastName: string, email: string, cover_background: string, profile_background: string}; } }
+require("dotenv").config();
+
+const cloudinary = require("cloudinary").v2
+
+
 
 const rootRouter = Router();
 const argon2 = require('argon2');
@@ -45,7 +50,7 @@ rootRouter.get("/login", check('username').exists({checkFalsy: true}), check('pa
         console.log(errors)
 
         if (!errors.isEmpty()){
-            return res.send({ errors: errors.array() });
+            return res.json({ errors: errors.array() });
         }
 
         
@@ -55,33 +60,38 @@ rootRouter.get("/login", check('username').exists({checkFalsy: true}), check('pa
     })
 
 
-    if(results === null || await argon2.verify(results.password, req.query.password) === false)
+    if(results === null || await argon2.verify(results.password, req.query.password) === false){
     // Login failed.
     res.json(null);
+    return
+    }
 
-    else if(results === null || req.query.password === ''){
+    else if(results === null || req.query.password === '' || req.query.username === ''){
         res.json(null)
+        return
     }
 
-  else
+  else {
+        
+        if(req.session){
+
+            req.session.user = {
+                firstName: results.firstName,
+                lastName: results.lastName,
+                email: results.email, 
+                cover_background: results.cover_background,
+                profile_background: results.profile_background
+            }
+
+        }
+
+        console.log(req.session.user)
 
 
-  
-  if(req.session){
 
-    req.session.user = {
-        firstName: results.firstName,
-        lastName: results.lastName,
-        email: results.email
-    }
+        res.json(req.session.user);
 
-}
-
-console.log(req.session.user)
-
-
-
-    res.json(results);
+  }
 
 
 })
@@ -123,7 +133,9 @@ rootRouter.post("/users",  body('email', 'Invalid Email Provided').isEmail().cus
         const cookieUser = {
             firstName: req.body.firstName,
             lastName: req.body.lastName, 
-            email: req.body.email
+            email: req.body.email,
+            cover_background: results.cover_background,
+            profile_background: results.profile_background
         }
 
         if(req.session){
@@ -143,12 +155,27 @@ rootRouter.post("/users",  body('email', 'Invalid Email Provided').isEmail().cus
 rootRouter.get("/users", async function (req: Request, res: Response){
 
     if(req.session.user){
-        res.send({loggedIn: true, firstName: req.session.user.firstName, lastName: req.session.user.lastName, email: req.session.user.email})
+        res.send({loggedIn: true, firstName: req.session.user.firstName, lastName: req.session.user.lastName, 
+                  email: req.session.user.email, cover_background: req.session.user.cover_background, profile_background: req.session.user.profile_background})
     }
 
     else{
         res.send({loggedIn: false})
     }
+
+
+})
+
+
+rootRouter.get("/user", async function (req: Request, res:Response){
+
+    
+    const results = await myDataSource.getRepository(User).findOneBy({
+        email: req.body.email,
+})
+
+
+    res.json(results)
 
 
 })
@@ -174,17 +201,114 @@ rootRouter.get("/logout", async function (req: Request, res: Response) {
 
 
 
-rootRouter.put("/users/:id", async function (req: Request, res: Response) {
+rootRouter.put("/users", async function (req: Request, res: Response) {
     const user = await myDataSource.getRepository(User).findOneBy({
+        email: req.body.email
     })
     myDataSource.getRepository(User).merge(user, req.body)
     const results = await myDataSource.getRepository(User).save(user)
+
+    // Update the cookie information... 
+
+    req.session.user.firstName = results.firstName
+    req.session.user.lastName = results.lastName
+
     return res.send(results)
 })
 
-rootRouter.delete("/users/:id", async function (req: Request, res: Response) {
+rootRouter.put("/change", async function (req: Request, res : Response, next: NextFunction){
+
+    console.log(req.body, "req")
+
+    const user = await myDataSource.getRepository(User).findOneBy({
+        email: req.body.email
+    }) // Reterive user
+
+    console.log(user)
+
+
+    try{
+
+    if ((await argon2.verify(user.password, req.body.oldPassword) === false)){
+        throw new Error('Something went wrong..')
+
+    }
+
+    else if(req.body.newPassword !== req.body.password){
+        res.json({error: "Provided Passwords Don't Match"})
+        return
+    }
+
+    else{
+
+        req.body.password = await argon2.hash(req.body.password)
+    
+        myDataSource.getRepository(User).merge(user, req.body)
+        const results = await myDataSource.getRepository(User).save(user)
+
+        res.json({validation: "Success"})
+
+        return
+
+
+    }
+
+    } catch(err){
+        next(err)
+        res.status(404).send({error: err})
+       
+    }
+
+
+})
+
+rootRouter.delete("/delete/:id", async function (req: Request, res: Response) {
     const results = await myDataSource.getRepository(User).delete(req.params.id)
+
+
+
     return res.send(results)
 })
 
 export {rootRouter as router}; 
+
+
+
+rootRouter.post("/upload/cover", async function (req: Request, res: Response) {
+
+    const fileEncoded: string = req.body.imageStringBase64
+    const uploadedImageType: string = req.body.imageType // contains the type of image that is being uploaded to cloudinary
+
+    console.log(fileEncoded)
+
+    const uploadedResponse = await cloudinary.uploader.upload(fileEncoded, {
+        resource_type: "image"
+    })
+
+    const user = await myDataSource.getRepository(User).findOneBy({
+        email: req.body.email
+    })
+
+    if (uploadedImageType === "coverImage") {
+
+        user.cover_background = uploadedResponse.public_id
+        req.session.user.cover_background = uploadedResponse.public_id
+
+    }
+
+    else{
+        user.profile_background = uploadedResponse.public_id
+        req.session.user.profile_background = uploadedResponse.public_id
+
+    }
+
+    const results = await myDataSource.getRepository(User).save(user)
+
+
+
+    console.log(uploadedResponse)
+
+    res.json({"background": uploadedResponse.public_id})
+
+})
+

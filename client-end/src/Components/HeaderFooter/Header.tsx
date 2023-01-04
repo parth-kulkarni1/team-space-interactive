@@ -16,12 +16,14 @@ function Header(){
 
     const user = useContext(UserContext)
 
+    console.log(user.user, "bhh")
+
 
     async function handleLogout(){
 
         await logoutUser();
 
-        user?.setUser(null)
+        user.setUser(null)
         
     }
 
@@ -45,7 +47,7 @@ function Header(){
             <Nav className = "ms-auto"> {/* This align more towards the end of the navbar */}
 
 
-                {user?.user?.loggedIn === undefined &&
+                {user.user?.loggedIn === undefined &&
 
                 <React.Fragment>
 
@@ -77,7 +79,7 @@ function Header(){
                 </LinkContainer>
 
                 <LinkContainer to = "/Login">
-                    <Nav.Link>Welcome - {user?.user.firstName}</Nav.Link>
+                    <Nav.Link className="text-muted">Welcome - {user?.user.firstName}</Nav.Link>
                 </LinkContainer>
 
             

@@ -30,6 +30,16 @@ var User = /** @class */ (function () {
         (0, typeorm_1.Column)(),
         __metadata("design:type", String)
     ], User.prototype, "password", void 0);
+    __decorate([
+        (0, typeorm_1.Column)({ default: "cover-background_hsrl28" }) // Storing the default cover-background that all users will be applied with
+        ,
+        __metadata("design:type", String)
+    ], User.prototype, "cover_background", void 0);
+    __decorate([
+        (0, typeorm_1.Column)({ default: "user_hv9uk1" }) // Storing the default profile pic
+        ,
+        __metadata("design:type", String)
+    ], User.prototype, "profile_background", void 0);
     User = __decorate([
         (0, typeorm_1.Entity)()
     ], User);

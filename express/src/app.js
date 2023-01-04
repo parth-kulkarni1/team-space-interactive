@@ -16,7 +16,7 @@ app_data_source_1.myDataSource
 });
 // create and setup express app
 var app = express();
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(session({
     secret: process.env.EXPRESS_SECERT,
     saveUninitialized: false,

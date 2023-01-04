@@ -1,9 +1,12 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import { BrowserRouter, Route, Link, Routes} from "react-router-dom";
 
+/*import all neccessary theme packages */
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
-import { UserContextProvider } from "./Components/UserContext/UserContext";
+import PrivateRoutes from "./utils/PrivateRoutes";
 
 /* Contains all relevant imports below */
 import Header from "./Components/HeaderFooter/Header";
@@ -15,36 +18,41 @@ import Login from "./Components/RegistrationPage/Login";
 import Reset from "./Components/RegistrationPage/Reset";
 
 import ProfilePage from "./Components/ProfilePage/ProfilePage";
+import ChangePassword from "./Components/ProfilePage/ChangePassword";
 
 /* ------------------------------------ */
 
 
 function App() {
 
-
+  
 
   return (
 
     <BrowserRouter>
 
-       <UserContextProvider>
-        
+      <ToastContainer position="top-right" />
+  
         <Header />
 
         <Routes>
 
+          
           <Route path="/" element = {<WelcomePage />}></Route>
           <Route path="/Register" element = {<Registration />}></Route>
           <Route path="/Login" element = {<Login />}></Route>
           <Route path ="/Reset" element = {<Reset />}></Route>
-          <Route path="/Profile" element = {<ProfilePage />}></Route>
 
+          <Route element = {<PrivateRoutes />} >
+            <Route path="/Profile" element = {<ProfilePage />}></Route>
+            <Route path="/ChangePassword" element = {<ChangePassword />}></Route>
+          </Route>
+          
 
         </Routes>
 
         <Footer />
 
-        </UserContextProvider>
         
     </BrowserRouter>
 

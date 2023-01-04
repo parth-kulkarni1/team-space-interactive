@@ -17,7 +17,10 @@ function Login(){
 
     const UserDefined: UserLogin = {
         email: "",
-        password: ""
+        password: "",
+        cover_background: "", 
+        profile_background: ""
+        
     } 
 
 
@@ -49,17 +52,19 @@ function Login(){
 
         }
 
-        else if ('error' in data){
+        else if (user.email === '' || user.password === ''){
             setError("Username or Password not Provided")
         }
 
         else{
 
-            userContext?.setUser({
+            userContext.setUser({
                 email: user.email,
                 firstName: data.firstName,
                 lastName: data.lastName, 
-                loggedIn: true
+                loggedIn: true,
+                profile_background: data.profile_background,
+                cover_background: data.cover_background
 
             })
 
@@ -81,26 +86,36 @@ function Login(){
             <Form.Group controlId = "emailForm">
 
                 <Form.Label>Username(Email)</Form.Label>
-                <Form.Control type = "text" size='lg' placeholder = "Please Enter Your Registered Email" onChange = {(e) => {handleChange("email", e.target.value)}}></Form.Control>
-                <Form.Text className = "text-danger">
+                <Form.Control 
+                    type = "text" 
+                    size='lg' 
+                    placeholder = "Please Enter Your Registered Email" 
+                    onChange = {(e) => {handleChange("email", e.target.value)}}
+                    isInvalid = {!!error}
+                    isValid = {error.length > 0 && !error}>
 
-                    {error}
+                </Form.Control>
 
-
-                </Form.Text>
-
+                <Form.Control.Feedback type = "invalid"> {error}</Form.Control.Feedback>
+                <Form.Control.Feedback type = "valid">Looks good</Form.Control.Feedback>
+                
             </Form.Group>
 
             <Form.Group controlId = "passwordForm">
 
                 <Form.Label>Password</Form.Label>
-                <Form.Control type = "password" size = "lg" placeholder = "Please Enter Your Password" onChange = {(e) => {handleChange("password", e.target.value)}}></Form.Control>
-                <Form.Text className = "text-danger">
+                <Form.Control 
+                    type = "password" 
+                    size = "lg" 
+                    placeholder = "Please Enter Your Password" 
+                    onChange = {(e) => {handleChange("password", e.target.value)}}
+                    isInvalid = {!!error}
+                    isValid = {error.length > 0 && !error}>
 
-                    {error}
+                </Form.Control>
 
-                </Form.Text>
-
+                <Form.Control.Feedback type = "invalid">{error}</Form.Control.Feedback>
+                
             </Form.Group>
 
 

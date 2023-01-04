@@ -7,6 +7,11 @@ type UserDefined = {
     password: string
 }
 
+type ProfileValidation = {
+    firstName: string, 
+    lastName: string
+}
+
 
 export async function Validation(user: UserDefined){
 
@@ -76,4 +81,44 @@ export async function Validation(user: UserDefined){
 
     }
 
+
+
+export function profileValidation(user: ProfileValidation){
+      const ErrorsObj = {
+                        firstNameError: "",
+                        lastNameError: "",
+                        validationSuccess: false}
+
+    
+        if (user.firstName.length === 0){
+            ErrorsObj.firstNameError = 'First name not provided!'
+        }
+
+        else if (user.firstName.match(/^[a-zA-Z]+$/) == null){
+            ErrorsObj.firstNameError = 'First name cannot contain symbols or numbers'
+        }
+
+        if (user.lastName.length === 0){
+            ErrorsObj.lastNameError = 'Last name not provided!'
+        }
+
+        else if (user.lastName.match(/^[a-zA-Z]+$/) == null){
+            ErrorsObj.lastNameError = 'Last name cannot contain symbols or numbers'
+        }
+
+
+
+        if ((ErrorsObj).firstNameError === '' && (ErrorsObj).lastNameError === '' ){ 
+
+            ErrorsObj.validationSuccess = true;
+
+        }
+
+        console.log(ErrorsObj, "before retunting")
+
+
+        return ErrorsObj
+
+
+}
 

@@ -41,6 +41,8 @@ var express_1 = require("express");
 var app_data_source_1 = require("../app-data-source");
 var user_1 = require("../entity/user");
 var express_validator_1 = require("express-validator");
+require("dotenv").config();
+var cloudinary = require("cloudinary").v2;
 var rootRouter = (0, express_1.Router)();
 exports.router = rootRouter;
 var argon2 = require('argon2');
@@ -89,7 +91,7 @@ rootRouter.get("/login", (0, express_validator_1.check)('username').exists({ che
                     errors = (0, express_validator_1.validationResult)(req);
                     console.log(errors);
                     if (!errors.isEmpty()) {
-                        return [2 /*return*/, res.send({ errors: errors.array() })];
+                        return [2 /*return*/, res.json({ errors: errors.array() })];
                     }
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).findOneBy({
                             email: req.query.username,
@@ -103,21 +105,28 @@ rootRouter.get("/login", (0, express_validator_1.check)('username').exists({ che
                     _a = (_b.sent()) === false;
                     _b.label = 3;
                 case 3:
-                    if (_a)
+                    if (_a) {
                         // Login failed.
                         res.json(null);
-                    else if (results === null || req.query.password === '') {
+                        return [2 /*return*/];
+                    }
+                    else if (results === null || req.query.password === '' || req.query.username === '') {
                         res.json(null);
+                        return [2 /*return*/];
                     }
-                    else if (req.session) {
-                        req.session.user = {
-                            firstName: results.firstName,
-                            lastName: results.lastName,
-                            email: results.email
-                        };
+                    else {
+                        if (req.session) {
+                            req.session.user = {
+                                firstName: results.firstName,
+                                lastName: results.lastName,
+                                email: results.email,
+                                cover_background: results.cover_background,
+                                profile_background: results.profile_background
+                            };
+                        }
+                        console.log(req.session.user);
+                        res.json(req.session.user);
                     }
-                    console.log(req.session.user);
-                    res.json(results);
                     return [2 /*return*/];
             }
         });
@@ -153,7 +162,9 @@ rootRouter.post("/users", (0, express_validator_1.body)('email', 'Invalid Email 
                     cookieUser = {
                         firstName: req.body.firstName,
                         lastName: req.body.lastName,
-                        email: req.body.email
+                        email: req.body.email,
+                        cover_background: results.cover_background,
+                        profile_background: results.profile_background
                     };
                     if (req.session) {
                         req.session.user = cookieUser;
@@ -167,12 +178,29 @@ rootRouter.get("/users", function (req, res) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             if (req.session.user) {
-                res.send({ loggedIn: true, firstName: req.session.user.firstName, lastName: req.session.user.lastName, email: req.session.user.email });
+                res.send({ loggedIn: true, firstName: req.session.user.firstName, lastName: req.session.user.lastName,
+                    email: req.session.user.email, cover_background: req.session.user.cover_background, profile_background: req.session.user.profile_background });
             }
             else {
                 res.send({ loggedIn: false });
             }
             return [2 /*return*/];
+        });
+    });
+});
+rootRouter.get("/user", function (req, res) {
+    return __awaiter(this, void 0, void 0, function () {
+        var results;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).findOneBy({
+                        email: req.body.email,
+                    })];
+                case 1:
+                    results = _a.sent();
+                    res.json(results);
+                    return [2 /*return*/];
+            }
         });
     });
 });
@@ -190,24 +218,78 @@ rootRouter.get("/logout", function (req, res) {
         });
     });
 });
-rootRouter.put("/users/:id", function (req, res) {
+rootRouter.put("/users", function (req, res) {
     return __awaiter(this, void 0, void 0, function () {
         var user, results;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).findOneBy({})];
+                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).findOneBy({
+                        email: req.body.email
+                    })];
                 case 1:
                     user = _a.sent();
                     app_data_source_1.myDataSource.getRepository(user_1.User).merge(user, req.body);
-                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).save(user)];
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).save(user)
+                        // Update the cookie information... 
+                    ];
                 case 2:
                     results = _a.sent();
+                    // Update the cookie information... 
+                    req.session.user.firstName = results.firstName;
+                    req.session.user.lastName = results.lastName;
                     return [2 /*return*/, res.send(results)];
             }
         });
     });
 });
-rootRouter.delete("/users/:id", function (req, res) {
+rootRouter.put("/change", function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var user, _a, results, err_1;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    console.log(req.body, "req");
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).findOneBy({
+                            email: req.body.email
+                        })]; // Reterive user
+                case 1:
+                    user = _b.sent() // Reterive user
+                    ;
+                    console.log(user);
+                    _b.label = 2;
+                case 2:
+                    _b.trys.push([2, 9, , 10]);
+                    return [4 /*yield*/, argon2.verify(user.password, req.body.oldPassword)];
+                case 3:
+                    if (!((_b.sent()) === false)) return [3 /*break*/, 4];
+                    throw new Error('Something went wrong..');
+                case 4:
+                    if (!(req.body.newPassword !== req.body.password)) return [3 /*break*/, 5];
+                    res.json({ error: "Provided Passwords Don't Match" });
+                    return [2 /*return*/];
+                case 5:
+                    _a = req.body;
+                    return [4 /*yield*/, argon2.hash(req.body.password)];
+                case 6:
+                    _a.password = _b.sent();
+                    app_data_source_1.myDataSource.getRepository(user_1.User).merge(user, req.body);
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).save(user)];
+                case 7:
+                    results = _b.sent();
+                    res.json({ validation: "Success" });
+                    return [2 /*return*/];
+                case 8: return [3 /*break*/, 10];
+                case 9:
+                    err_1 = _b.sent();
+                    next(err_1);
+                    res.status(404).send({ error: err_1 });
+                    return [3 /*break*/, 10];
+                case 10: return [2 /*return*/];
+            }
+        });
+    });
+});
+rootRouter.delete("/delete/:id", function (req, res) {
     return __awaiter(this, void 0, void 0, function () {
         var results;
         return __generator(this, function (_a) {
@@ -216,6 +298,44 @@ rootRouter.delete("/users/:id", function (req, res) {
                 case 1:
                     results = _a.sent();
                     return [2 /*return*/, res.send(results)];
+            }
+        });
+    });
+});
+rootRouter.post("/upload/cover", function (req, res) {
+    return __awaiter(this, void 0, void 0, function () {
+        var fileEncoded, uploadedImageType, uploadedResponse, user, results;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    fileEncoded = req.body.imageStringBase64;
+                    uploadedImageType = req.body.imageType // contains the type of image that is being uploaded to cloudinary
+                    ;
+                    console.log(fileEncoded);
+                    return [4 /*yield*/, cloudinary.uploader.upload(fileEncoded, {
+                            resource_type: "image"
+                        })];
+                case 1:
+                    uploadedResponse = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).findOneBy({
+                            email: req.body.email
+                        })];
+                case 2:
+                    user = _a.sent();
+                    if (uploadedImageType === "coverImage") {
+                        user.cover_background = uploadedResponse.public_id;
+                        req.session.user.cover_background = uploadedResponse.public_id;
+                    }
+                    else {
+                        user.profile_background = uploadedResponse.public_id;
+                        req.session.user.profile_background = uploadedResponse.public_id;
+                    }
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).save(user)];
+                case 3:
+                    results = _a.sent();
+                    console.log(uploadedResponse);
+                    res.json({ "background": uploadedResponse.public_id });
+                    return [2 /*return*/];
             }
         });
     });

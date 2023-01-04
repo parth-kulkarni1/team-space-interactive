@@ -1,49 +1,13 @@
-import axios, { AxiosResponse } from "axios"; 
+import axios from "axios"; 
+import {CreateUser, getResponse, getResponse1, CookieResponse,
+        UserChange, userChange1, 
+        profile, passwordChange, encodedJSON, UserNameOnly} from './AxiosTypes'
 
 
-
-/* Define all the DEFUALT HOST AND API NAMES */
-
-const API_HOST: string = "http://localhost:4000";
-
-
-/*---------------------------------------------*/
-
-
-/* Defining the Types */
-
-type CreateUser = {
-    email: string, 
-    firstName: string, 
-    lastName: string, 
-    password: string
+type cover = {
+    'cover_background': string
 
 }
-
-
-type VetifyUser = {
-    email: string, 
-    password: string,
-    lastName: string,
-    firstName: string,
-}
-
-
-type getResponse = {
-    lastName: string,
-    firstName: string,
-    data: VetifyUser[]; 
-}
-
-type getResponse1 = {
-    data: CreateUser[];
-}
-
-
-
-
-
-/*-----------------------------------------------*/
 
 
 export async function createUser(user: CreateUser){
@@ -83,7 +47,7 @@ export async function findUser(id: string){
 
 
 export async function findCookie(){
-    const {data} = await axios.get('/users')
+    const {data} = await axios.get<CookieResponse>('/users')
 
     console.log(data)
 
@@ -93,6 +57,43 @@ export async function findCookie(){
 
 export async function logoutUser(){
     const {data} = await axios.get('/logout')
+
+    return data
+
+
+}
+
+export async function updateUser(profile: profile): Promise <UserChange | userChange1>{
+    const {data} = await axios.put<userChange1 | UserChange>("/users", profile)
+
+    console.log(data)
+
+    return data
+
+}
+
+
+export async function updatePassword(passwordChange: passwordChange){
+    const {data} = await axios.put("/change", passwordChange)
+
+    console.log(data)
+
+    return data
+
+}
+
+
+export async function deleteAccount(id: string){
+    const {data} = await axios.delete(`/delete/${id}`)
+
+    console.log(data)
+
+    return data
+
+}
+
+export async function uploadCoverImageCloudinary(encodedJSON : encodedJSON){
+    const {data} = await axios.post('/upload/cover', encodedJSON)
 
     return data
 

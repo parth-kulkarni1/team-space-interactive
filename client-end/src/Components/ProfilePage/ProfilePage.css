@@ -24,8 +24,6 @@
     height: 100px;
     width: 150px;
     border-radius: 50%;
-    border: solid grey;
-    background-color: green;
     object-fit: contain;
     
 }
@@ -38,5 +36,11 @@
 .buttonsCancelSave{
     gap: 30px;
 
+}
+
+
+.cancel-save-buttons{
+    display: flex;
+    gap: 30px
 }
 
