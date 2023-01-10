@@ -1,0 +1,39 @@
+.page-container{
+    width: 100%;
+    height: 100vh;
+    padding: 10px;
+    background-color:#242526;
+    color: white;
+}
+
+.list-user{
+    width: 10%;
+    height:100vh;
+}
+
+.post-user{
+    display: flex;
+    justify-content: center;
+    width: 80%;
+    height: 100vh;
+}
+
+.network-user{
+    width: 10%;
+    height: 100vh;
+}
+
+.user-make-a-post{
+    background-color: #18191a;
+    width: 50%;
+    height: 20%;
+    border-radius: 5px;
+}
+
+.post-profile-pic{
+    width: 50%;
+}
+
+.button-post{
+    width: 100%;
+}

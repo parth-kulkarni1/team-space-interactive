@@ -1,4 +1,4 @@
-import {useState, useContext, useEffect} from 'react';
+import {useState, useContext} from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
@@ -41,64 +41,51 @@ function Registration(){
     const userContext = useContext(UserContext);
 
 
-    useEffect(() => {
-
-
-        async function handleNavigation() {
-    
-    
-        if (error.validationSuccess === true){    
-
-                const response = await toast.promise(createUser(user), {
-                    pending: 'Signing you up...',
-                    success: 'You have signed up successfully', 
-                    error: 'Something has gone wrong..'
-
-                }); 
-
-                if('errors' in response){ // Ensure if there is an error in the backend it does not navigate the user forward..(Security Implementation)
-                    return
-                }
-
-                userContext.setUser({
-                    email: user.email,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    loggedIn: true,
-                    cover_background: response.cover_background,
-                    profile_background: response.profile_background
-                })
-
-                navigate("/Profile")
-
-        }
-
-        }
-
-        handleNavigation();
-
-    }, [error])
-
-
-
-
     function handleChange <P extends keyof User>(prop: P, value: User[P] ){
 
         setUser({ ...user, [prop]: value });
     }
 
 
-   async function handleSumbit(event: React.FormEvent<HTMLFormElement>){
+   async function handleSumbit(event: React.FormEvent<HTMLFormElement>): Promise<void>{
 
         // Set up our validation inside of here...
 
         event.preventDefault();
 
-        const ErrorsObj = await Validation(user)
+        const ErrorsObj:UserErrors = await Validation(user)
 
-        setError(ErrorsObj)
+        if(ErrorsObj.validationSuccess){
+            const response = await toast.promise(createUser(user), {
+                pending: 'Signing you up...',
+                success: 'You have signed up successfully', 
+                error: 'Something has gone wrong..'
+
+            }); 
+
+            if('errors' in response){ // Ensure if there is an error in the backend it does not navigate the user forward..(Security Implementation)
+                return
+            }
+
+            userContext.setUser({
+                id: response.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                loggedIn: true,
+                cover_background: response.cover_background,
+                profile_background: response.profile_background
+            })
+
+            navigate("/Profile")
 
     }
+ 
+        setError(ErrorsObj)
+
+
+        }
+
 
     return(
 
@@ -157,7 +144,7 @@ function Registration(){
                     <Form.Control 
                         className = "form-input" 
                         type = "text" 
-                        placeholder = "Please Provide Your Last Name777" 
+                        placeholder = "Please Provide Your Last Name" 
                         size = "lg" 
                         onChange = {(e) => {handleChange("lastName", e.target.value)}}
                         isInvalid = {!!error.lastNameError}

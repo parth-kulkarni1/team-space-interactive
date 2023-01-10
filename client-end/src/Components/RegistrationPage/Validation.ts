@@ -1,22 +1,12 @@
-import { createUser, findUser } from '../../AxiosCommands/AxiosCommands';
-
-type UserDefined = {
-    email: string, 
-    firstName: string, 
-    lastName: string,
-    password: string
-}
-
-type ProfileValidation = {
-    firstName: string, 
-    lastName: string
-}
+import {findUser } from '../../AxiosCommands/AxiosCommands';
+import { passwordChange } from '../../AxiosCommands/AxiosTypes';
+import { errorsType, profilePageError, TypeProfileChanges, User, UserErrors } from '../Types/UserTypes';
 
 
-export async function Validation(user: UserDefined){
+export async function Validation(user: User): Promise<UserErrors>{
 
 
-       const ErrorsObj = { emailError: "",
+       const ErrorsObj: UserErrors = { emailError: "",
                         firstNameError: "",
                         lastNameError: "",
                         passwordError: "",
@@ -83,8 +73,8 @@ export async function Validation(user: UserDefined){
 
 
 
-export function profileValidation(user: ProfileValidation){
-      const ErrorsObj = {
+export function profileValidation(user: TypeProfileChanges): profilePageError{
+      const ErrorsObj: profilePageError = {
                         firstNameError: "",
                         lastNameError: "",
                         validationSuccess: false}
@@ -118,6 +108,51 @@ export function profileValidation(user: ProfileValidation){
 
 
         return ErrorsObj
+
+
+}
+
+
+
+export function ChangePasswordValidation(passwords: passwordChange): errorsType{
+
+    const errrors: errorsType = {
+        oldPassword: "",
+        newPassword: "",
+        password: "",
+        validationSuccess: false
+    }
+
+
+    
+    if((passwords.newPassword.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/) == null) && (passwords.password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/) == null)){
+        errrors.newPassword = "Passwords should contain 8 to 15 characters, one uppercase letter, one numeric digit and one special character"
+
+    }
+
+    if (passwords.oldPassword.length === 0){
+        errrors.oldPassword = "Please provided a password"
+
+    }
+
+    if (passwords.newPassword.length === 0){
+        errrors.newPassword = "Please provide a password"
+    }
+
+    if(passwords.password.length === 0){
+        errrors.password = "Please provide a password"
+    }
+
+    if (passwords.newPassword !== passwords.password){
+        errrors.password = "Passwords dont match!"
+    }
+
+    if ((passwords.oldPassword.length > 0) && (passwords.oldPassword.length > 0) && (passwords.newPassword.length > 0) && (passwords.newPassword === passwords.password)){
+        errrors.validationSuccess = true
+
+    }
+
+    return errrors
 
 
 }

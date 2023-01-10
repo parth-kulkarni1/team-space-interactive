@@ -13,26 +13,30 @@ export type CreateUser = {
 }
 
 
-export type VetifyUser = {
+export type CreateUserResponse = {
+    id: number
     email: string, 
-    lastName: string,
-    firstName: string,
+    firstName: string, 
+    lastName: string, 
+    password: string,
+    cover_background: string,
+    profile_background: string
+
 }
 
 
-export type getResponse = {
+
+export type getUserDetails = {
+    id: number
     lastName: string,
     firstName: string,
     cover_background: string,
     profile_background: string
-    data: VetifyUser[]; 
 }
 
-export type getResponse1 = {
-    data: CreateUser[];
-}
 
 export type CookieResponse = {
+    id: number
     loggedIn: boolean, 
     firstName: string,
     lastName: string, 
@@ -50,6 +54,7 @@ export type userChange1 = {
 }
 
 export type profile = {
+    id: number,
     firstName:string,
     lastName:string,
     email:string,
@@ -73,4 +78,8 @@ export type encodedJSON = {
 
 export type UserNameOnly = {
     email : string
+}
+
+export type cloudinaryResponse = {
+    background: string
 }

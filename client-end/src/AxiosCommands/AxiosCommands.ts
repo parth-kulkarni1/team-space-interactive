@@ -1,17 +1,11 @@
 import axios from "axios"; 
-import {CreateUser, getResponse, getResponse1, CookieResponse,
+import {CreateUser, CookieResponse,
         UserChange, userChange1, 
-        profile, passwordChange, encodedJSON, UserNameOnly} from './AxiosTypes'
+        profile, passwordChange, encodedJSON, getUserDetails, cloudinaryResponse, CreateUserResponse} from './AxiosTypes'
 
 
-type cover = {
-    'cover_background': string
-
-}
-
-
-export async function createUser(user: CreateUser){
-    const {data} = await axios.post<CreateUser>("/users", user,
+export async function createUser(user: CreateUser): Promise<CreateUserResponse>{
+    const {data} = await axios.post<CreateUserResponse>("/user/create", user,
     {
         headers:{
             'Content-Type': 'application/json',
@@ -26,17 +20,16 @@ export async function createUser(user: CreateUser){
 }
 
 
-export async function verifyUser(username: string, password : string){
-    const {data} = await axios.get<getResponse>("/login", { params: { username, password } })
-
-    console.log(data, "login")
+export async function verifyUser(username: string, password : string): Promise<getUserDetails>{
+    
+    const {data} =  await axios.get<getUserDetails>("/login", { params: { username, password } })
    
     return data;
 }
 
 
-export async function findUser(id: string){
-    const {data} = await axios.get<getResponse1>(`/users/${id}`)
+export async function findUser(id: string): Promise<null | true>{
+    const {data} = await axios.get<null | true>(`/user/${id}`)
 
     console.log(data)
 
@@ -46,8 +39,8 @@ export async function findUser(id: string){
 }
 
 
-export async function findCookie(){
-    const {data} = await axios.get<CookieResponse>('/users')
+export async function findCookie(): Promise<CookieResponse>{
+    const {data} = await axios.get<CookieResponse>('/user')
 
     console.log(data)
 
@@ -55,16 +48,14 @@ export async function findCookie(){
 
 }
 
-export async function logoutUser(){
-    const {data} = await axios.get('/logout')
-
-    return data
-
+export async function logoutUser(): Promise<void>{
+    
+    await axios.get('/logout')
 
 }
 
 export async function updateUser(profile: profile): Promise <UserChange | userChange1>{
-    const {data} = await axios.put<userChange1 | UserChange>("/users", profile)
+    const {data} = await axios.put<userChange1 | UserChange>("/user/update/name", profile)
 
     console.log(data)
 
@@ -73,8 +64,8 @@ export async function updateUser(profile: profile): Promise <UserChange | userCh
 }
 
 
-export async function updatePassword(passwordChange: passwordChange){
-    const {data} = await axios.put("/change", passwordChange)
+export async function updatePassword(passwordChange: passwordChange): Promise<passwordChange>{
+    const {data} = await axios.put<passwordChange>("/user/update/password", passwordChange)
 
     console.log(data)
 
@@ -83,8 +74,8 @@ export async function updatePassword(passwordChange: passwordChange){
 }
 
 
-export async function deleteAccount(id: string){
-    const {data} = await axios.delete(`/delete/${id}`)
+export async function deleteAccount(id: string): Promise<any>{
+    const {data} = await axios.delete(`/user/delete/${id}`)
 
     console.log(data)
 
@@ -92,8 +83,10 @@ export async function deleteAccount(id: string){
 
 }
 
-export async function uploadCoverImageCloudinary(encodedJSON : encodedJSON){
-    const {data} = await axios.post('/upload/cover', encodedJSON)
+export async function uploadCoverImageCloudinary(encodedJSON : encodedJSON): Promise<cloudinaryResponse>{
+    const {data} = await axios.post<cloudinaryResponse>('/user/profile/images', encodedJSON)
+
+    console.log(data)
 
     return data
 

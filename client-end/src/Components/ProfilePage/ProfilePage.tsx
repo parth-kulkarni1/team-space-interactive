@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from "react"
+import React, {useState, useContext} from "react"
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import {Form} from "react-bootstrap"
@@ -7,7 +7,7 @@ import './ProfilePage.css'
 
 import { UserContext } from '../UserContext/UserContext';
 import {TypeProfileChanges, profilePageError} from "../Types/UserTypes"
-import {updateUser, deleteAccount, logoutUser, uploadCoverImageCloudinary, findCookie} from "../../AxiosCommands/AxiosCommands";
+import {updateUser, deleteAccount, logoutUser, uploadCoverImageCloudinary} from "../../AxiosCommands/AxiosCommands";
 import {AdvancedImage} from '@cloudinary/react';
 import { cld } from "../../utils/Cloudinary";
 import {thumbnail} from "@cloudinary/url-gen/actions/resize";
@@ -28,17 +28,17 @@ function ProfilePage(){
     }
 
 
-    const [profile, setProfile] = useState<TypeProfileChanges | null>(userContext.user); 
+    const [profile, setProfile] = useState<TypeProfileChanges | null>(userContext?.user); 
 
     const [show, setShow] = useState<boolean | undefined>(false)
 
     const [previewImage, setPreviewImage] = useState< string | null>('')
 
-    const [coverImage, setCoverImage] = useState<string>('')
+    const [coverImage, setCoverImage] = useState<string>(userContext.user?.cover_background as string)
 
     const [previewImageProfile, setPreviewImageProfile] = useState<string | null>('')
 
-    const [profileImage, setProfileImage] = useState<string>('')
+    const [profileImage, setProfileImage] = useState<string>(userContext.user?.profile_background as string)
 
     const [errors, setErrors] = useState(ProfileErrors);
 
@@ -48,34 +48,7 @@ function ProfilePage(){
     const handleShow = () => setShow(true)
 
 
-
-
-    useEffect(() =>{ // On initial render we fetch the required image details..
-
-        async function getUserDetails(){
-
-            const data = await findCookie();
-
-
-            setCoverImage(data.cover_background)
-
-            setProfileImage(data.profile_background)
-            
-            console.log('damn')
-
-        }
-
-        getUserDetails();
-
-        
-
-    
-    }) 
-
-
-
-
-    function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>){
+    function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>): void{
 
         if(!e.target.files){
             return;
@@ -115,7 +88,7 @@ function ProfilePage(){
 
     }
 
-    function handleChange <P extends keyof TypeProfileChanges>(prop: P, value:TypeProfileChanges[P] ){
+    function handleChange <P extends keyof TypeProfileChanges>(prop: P, value:TypeProfileChanges[P] ): void{
 
         if(profile){
             setProfile({ ...profile, [prop]: value });
@@ -125,10 +98,8 @@ function ProfilePage(){
     }
 
 
-    function handleSumbitFile(event: React.FormEvent<HTMLButtonElement>) {
+    function handleSumbitFile(event: React.FormEvent<HTMLButtonElement>): void {
         event.preventDefault();
-
-        console.log(event.currentTarget.name, "button name")
 
         if(event.currentTarget.name === "coverImage"){        
             
@@ -142,8 +113,7 @@ function ProfilePage(){
 
     }
 
-    async function uploadImage (base64encodedImage : string, type: string) {
-        console.log(base64encodedImage)
+    async function uploadImage (base64encodedImage : string, type: string): Promise<void> {
 
         const public_id = await toast.promise(uploadCoverImageCloudinary({imageStringBase64 : base64encodedImage, imageType: type, email: userContext?.user?.email as string}), {
 
@@ -199,17 +169,20 @@ function ProfilePage(){
 
 
         if(!profile){
+            console.log("nully")
             return
         }
+
+        console.log("triggered", profile)
+
 
         const error:profilePageError = profileValidation(profile)
 
         setErrors(error)
 
-        console.log(error)
-
 
         if(error.validationSuccess){
+            console.log(profile, "profile dawg")
             await toast.promise(updateUser(profile), {
                 pending: "Updating Details...",
                 success: "Your Details have been updated",
@@ -221,15 +194,13 @@ function ProfilePage(){
 
     }
 
-    async function handleDelete(){
+    async function handleDelete(): Promise<void>{
 
         await deleteAccount(profile!.email); // Declaring since we know that its not nulll..
 
         await logoutUser();
 
         userContext.setUser(null)
-
-        navigate('/')
 
     }
 
@@ -244,7 +215,7 @@ function ProfilePage(){
                 
                 {previewImage && (
                     <img src = {previewImage} className = "cover-img" alt = "cover-background"></img>
-                )}
+                )}  
 
 
 
@@ -297,7 +268,7 @@ function ProfilePage(){
 
                 }
 
-                <h3 className="p-3">{userContext?.user?.firstName} {userContext?.user?.lastName}</h3>
+                <h3 className="p-3">{userContext.user?.firstName} {userContext.user?.lastName}</h3>
 
             </div>
 
@@ -333,8 +304,8 @@ function ProfilePage(){
                     
                     <Form.Control 
                         type="text" 
-                        defaultValue={userContext?.user?.firstName} 
-                        onChange = {(e) => {handleChange("firstName", e.target.value || "")}} 
+                        defaultValue={userContext.user?.firstName} 
+                        onChange = {(e) => {handleChange("firstName", e.target.value)}} 
                         isInvalid={!!errors.firstNameError}
                     ></Form.Control>
 
@@ -343,8 +314,8 @@ function ProfilePage(){
                     <Form.Label> Last Name</Form.Label>                    
                     <Form.Control 
                         type = "text" 
-                        defaultValue = {userContext?.user?.lastName} 
-                        onChange = {(e) => {handleChange("lastName", e.target.value || "")}}
+                        defaultValue = {userContext.user?.lastName} 
+                        onChange = {(e) => {handleChange("lastName", e.target.value)}}
                         isInvalid = {!!errors.lastNameError}
                     ></Form.Control> 
                     
@@ -359,7 +330,7 @@ function ProfilePage(){
                 <Form.Group className = "d-flex justify-content-around p-5 flex-column">
 
                     <Form.Label>Email</Form.Label>
-                    <Form.Control type = "email" value = {userContext?.user?.email} disabled = {true}></Form.Control>
+                    <Form.Control type = "email" defaultValue = {userContext.user?.email} onChange = {(e) => {handleChange("email", e.target.value)}}></Form.Control>
 
                 </Form.Group>
 

@@ -1,29 +1,27 @@
-import React, {useContext} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {LinkContainer} from 'react-router-bootstrap'
-import { UserContext } from '../UserContext/UserContext';
 
 
-import {logoutUser } from "../../AxiosCommands/AxiosCommands";
+
+import {findCookie, logoutUser } from "../../AxiosCommands/AxiosCommands";
 
 
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
+import { User, aUserContext } from "../Types/UserTypes";
+import { UserContext } from "../UserContext/UserContext";
 
 
 function Header(){
 
-
     const user = useContext(UserContext)
-
-    console.log(user.user, "bhh")
-
 
     async function handleLogout(){
 
         await logoutUser();
 
-        user.setUser(null)
+        user.setUser({loggedIn: false, id: 0, cover_background: '', firstName: '', lastName: '', profile_background: '', email: ''})
         
     }
 
@@ -47,7 +45,7 @@ function Header(){
             <Nav className = "ms-auto"> {/* This align more towards the end of the navbar */}
 
 
-                {user.user?.loggedIn === undefined &&
+                {user.user?.loggedIn === false &&
 
                 <React.Fragment>
 
@@ -66,9 +64,14 @@ function Header(){
                 }
 
 
-                {user?.user?.loggedIn === true &&
+                {user.user?.loggedIn === true &&
 
                 <React.Fragment>
+
+                    
+                <LinkContainer to = "/Home">
+                    <Nav.Link>Home</Nav.Link>
+                </LinkContainer>
 
                 <LinkContainer to = "/Profile">
                     <Nav.Link>Your Profile</Nav.Link>
@@ -79,8 +82,9 @@ function Header(){
                 </LinkContainer>
 
                 <LinkContainer to = "/Login">
-                    <Nav.Link className="text-muted">Welcome - {user?.user.firstName}</Nav.Link>
+                    <Nav.Link disabled className="text-muted">Welcome - {user.user.firstName}</Nav.Link>
                 </LinkContainer>
+
 
             
 

@@ -6,9 +6,10 @@ import './ChangePassword.css'
 
 import {useContext, useState} from "react"
 import { UserContext } from "../UserContext/UserContext"
-import { TypeChangePassword } from "../Types/UserTypes"
+import { TypeChangePassword, errorsType } from "../Types/UserTypes"
 import { updatePassword } from "../../AxiosCommands/AxiosCommands"
 import {toast } from 'react-toastify';
+import { ChangePasswordValidation } from "../RegistrationPage/Validation"
 
 function ChangePassword(){
 
@@ -18,41 +19,27 @@ function ChangePassword(){
         oldPassword: '',
         newPassword: '',
         password: '',
-        email: userContext?.user?.email as string
+        email: userContext.user?.email as string
     }
 
-    type errorsType = {
-        oldPassword: string, 
-        newPassword: string,
-        password: string
-    }
 
     const [passwords, setPasswords] = useState(PasswordsDefined)
 
     const [errors, setErrors] = useState<errorsType | null>(null);
 
-
     
-    function handleChange <P extends keyof TypeChangePassword>(prop: P, value:TypeChangePassword[P] ){
+    function handleChange <P extends keyof TypeChangePassword>(prop: P, value:TypeChangePassword[P]): void{
 
         setPasswords({ ...passwords, [prop]: value });
     }
 
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>){
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void>{
 
         event.preventDefault();
 
-        const errrors:any = {}
+        const errObj:errorsType = ChangePasswordValidation(passwords)
 
-        
-
-        if((passwords.newPassword.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/) == null) && (passwords.password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/) == null)){
-            errrors.newPassword = "Passwords should contain 8 to 15 characters, one uppercase letter, one numeric digit and one special character"
-
-        }
-
-
-        if ((passwords.oldPassword.length > 0) && (passwords.oldPassword.length > 0) && (passwords.newPassword.length > 0) && (passwords.newPassword === passwords.password)){
+        if (errObj.validationSuccess){
                     
             await toast.promise(updatePassword(passwords), { 
                 pending: "Changing passwords..",
@@ -61,33 +48,18 @@ function ChangePassword(){
 
             }).catch(err => {
 
-                errrors.oldPassword = "Your provided old password is incorrect.."
+                console.log(err)
+
+                    errObj.oldPassword = "Your provided old password is incorrect.."
+    
+
             })
-            
         
         }
+            
 
-        if (passwords.oldPassword.length === 0){
-            errrors.oldPassword = "Please provided a password"
-
-        }
-
-        if (passwords.newPassword.length === 0){
-            errrors.newPassword = "Please provide a password"
-        }
-
-        if(passwords.password.length === 0){
-            errrors.password = "Please provide a password"
-        }
-
-        if (passwords.newPassword !== passwords.password){
-            errrors.password = "Passwords dont match!"
-        }
-
-
-
-        setErrors(errrors)
-
+        setErrors(errObj)
+        
     }
 
     return(

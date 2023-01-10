@@ -8,6 +8,7 @@ import Form from 'react-bootstrap/Form';
 import { UserLogin } from '../Types/UserTypes';
 import { verifyUser } from '../../AxiosCommands/AxiosCommands';
 import {UserContext} from '../UserContext/UserContext';
+import { toast } from 'react-toastify';
 
 
 function Login(){
@@ -34,16 +35,13 @@ function Login(){
     }
 
 
-   async function handleSumbit(event: React.FormEvent<HTMLFormElement>){
+   async function handleSumbit(event: React.FormEvent<HTMLFormElement>): Promise<void>{
 
         // Set up our validation inside of here...
 
         event.preventDefault();
 
         const data = await verifyUser(user.email, user.password)
-
-        console.log(data)
-
 
 
         if(data === null){
@@ -59,6 +57,7 @@ function Login(){
         else{
 
             userContext.setUser({
+                id: data.id,
                 email: user.email,
                 firstName: data.firstName,
                 lastName: data.lastName, 
@@ -67,6 +66,8 @@ function Login(){
                 cover_background: data.cover_background
 
             })
+
+            toast.success("You have logged in successfully..")
 
             navigate('/Profile')
         }
@@ -81,7 +82,7 @@ function Login(){
 
         <h3 className = "text-center mb-3 p-5">Welcome Back! Login</h3>
 
-        <Form className = "d-flex flex-column p-5" onSubmit={handleSumbit}>
+        <Form className = "d-flex flex-column p-5 login-form" onSubmit={handleSumbit}>
 
             <Form.Group controlId = "emailForm">
 

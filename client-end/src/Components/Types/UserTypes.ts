@@ -1,4 +1,13 @@
 
+/* This file contains all type definitions used across the application for user based interactions
+
+    E.g - Changing Passwords, Registering User, Login the user, Changing Details
+
+    E.g - User Context..
+
+*/
+
+
     export type User = {
         email: string, 
         firstName: string, 
@@ -9,7 +18,8 @@
         profile_background: string
     }
 
-    export type UserContext = {
+    export type aUserContext = {
+        id: number,
         email: string, 
         firstName: string, 
         lastName: string,
@@ -37,6 +47,7 @@
 
 
     export type TypeProfileChanges = {
+        id: number
         firstName: string, 
         lastName: string
         email: string 
@@ -59,6 +70,13 @@
     export type profilePageError = {
         firstNameError: string
         lastNameError: string
+        validationSuccess: boolean
+    }
+
+    export type errorsType = {
+        oldPassword: string, 
+        newPassword: string,
+        password: string,
         validationSuccess: boolean
     }
 

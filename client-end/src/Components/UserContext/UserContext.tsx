@@ -1,10 +1,10 @@
 import React, {createContext, useEffect, useState} from "react";
 import { findCookie } from "../../AxiosCommands/AxiosCommands";
-import { UserContext as User } from "../Types/UserTypes";
+import { aUserContext as User } from "../Types/UserTypes";
    
     
     type UserContextType = {
-        user: User | null 
+        user: User | null
         setUser: React.Dispatch<React.SetStateAction<User | null>>
 
     }
@@ -19,34 +19,40 @@ import { UserContext as User } from "../Types/UserTypes";
 
         const [user,setUser] = useState<User | null>(null); // Null as the user is logged in but this value can change
 
-    useEffect(() =>{
+        useEffect(() =>{
 
-        async function InitaliseCookie(){
+            async function InitaliseCookie(){
 
-        const userData: User = await findCookie(); // find the cookie and see if it's present
+                console.log("triggering again and again..")
+        
+                const userData: User = await findCookie(); // find the cookie and see if it's present
+        
+        
+                if (userData.loggedIn === false){
+                    setUser(userData)
+                
+                }
+        
+                else{
+                    setUser(userData)
+                }
+        
+                }
+        
+        
+                InitaliseCookie();
 
-        console.log(userData)
+                return () => {
 
-
-        if (userData.loggedIn === false){
-            setUser(null)
-        }
-
-        else{
-            setUser(userData)
-        }
-
-        }
-
-
-        InitaliseCookie();
-
-
-    }, [user?.firstName, user?.lastName, user?.email, user?.loggedIn])
-
+                }
+        
+    
+        }, [])
+    
+    
         return (
             <UserContext.Provider value = {{user, setUser}}>
-                {children}
+                {user ? children: null}
             </UserContext.Provider>
 
         )
