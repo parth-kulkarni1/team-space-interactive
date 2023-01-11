@@ -1,7 +1,7 @@
 import { Outlet, Navigate } from "react-router-dom";
 import {useEffect, useState} from "react"
-import { findCookie } from "../AxiosCommands/AxiosCommands";
-import { CookieResponse } from "../AxiosCommands/AxiosTypes";
+import { findCookie } from "../AxiosCommands/User/AxiosUserCommands";
+import { CookieResponse } from "../AxiosCommands/User/AxiosUserTypes";
 
 function PrivateRoutes(){
 

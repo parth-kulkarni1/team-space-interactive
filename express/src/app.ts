@@ -1,9 +1,8 @@
 import * as express from "express"
 import { myDataSource } from "./app-data-source"
 import { router } from "./routes/UserRoute"
+import { Postrouter } from "./routes/PostRoute";
 import session = require('express-session');
-import { SessionData, Store, MemoryStore, Session } from 'express-session';
-import * as argon2 from "argon2";
 require('dotenv').config()
 
 
@@ -45,7 +44,7 @@ const corsOptions ={
 }
 app.use(cors(corsOptions));
 
-app.use(router)
+app.use(router, Postrouter)
 
 
 

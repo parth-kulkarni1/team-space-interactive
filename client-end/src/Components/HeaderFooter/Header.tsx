@@ -3,7 +3,7 @@ import {LinkContainer} from 'react-router-bootstrap'
 
 
 
-import {findCookie, logoutUser } from "../../AxiosCommands/AxiosCommands";
+import {findCookie, logoutUser } from "../../AxiosCommands/User/AxiosUserCommands";
 
 
 import Container from 'react-bootstrap/Container';

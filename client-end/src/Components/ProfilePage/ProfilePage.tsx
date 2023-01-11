@@ -7,13 +7,13 @@ import './ProfilePage.css'
 
 import { UserContext } from '../UserContext/UserContext';
 import {TypeProfileChanges, profilePageError} from "../Types/UserTypes"
-import {updateUser, deleteAccount, logoutUser, uploadCoverImageCloudinary} from "../../AxiosCommands/AxiosCommands";
+import {updateUser, deleteAccount, logoutUser, uploadCoverImageCloudinary} from "../../AxiosCommands/User/AxiosUserCommands";
 import {AdvancedImage} from '@cloudinary/react';
 import { cld } from "../../utils/Cloudinary";
 import {thumbnail} from "@cloudinary/url-gen/actions/resize";
 import { byRadius } from "@cloudinary/url-gen/actions/roundCorners";
 import {toast } from 'react-toastify';
-import { profileValidation } from "../RegistrationPage/Validation";
+import { profileValidation } from "../../utils/Validation";
 
 function ProfilePage(){
 

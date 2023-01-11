@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm"
+import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, OneToMany } from "typeorm"
+import { Post } from "../Posts/post"
 
 @Entity()
 export class User {
@@ -22,4 +23,7 @@ export class User {
 
     @Column({default:  "user_hv9uk1"}) // Storing the default profile pic
     profile_background: string
+
+    @OneToMany(() => Post, (post) => post.post_id)
+    posts: Post[]
 }

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var app_data_source_1 = require("./app-data-source");
 var UserRoute_1 = require("./routes/UserRoute");
+var PostRoute_1 = require("./routes/PostRoute");
 var session = require("express-session");
 require('dotenv').config();
 // establish database connection
@@ -31,6 +32,6 @@ var corsOptions = {
     optionSuccessStatus: 200
 };
 app.use(cors(corsOptions));
-app.use(UserRoute_1.router);
+app.use(UserRoute_1.router, PostRoute_1.Postrouter);
 // start express server
 app.listen(4000, function () { return console.log("Running Express On 4000"); });

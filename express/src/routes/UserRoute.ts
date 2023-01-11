@@ -1,6 +1,6 @@
 import { Router, Request, Response, json, query, NextFunction } from "express";
 import { myDataSource } from "../app-data-source"
-import { User } from "../entity/user";
+import { User } from "../entity/User/user";
 import { body, validationResult, CustomValidator, param, check} from 'express-validator';
 import {Session} from 'express-session'; declare module 'express-session' { interface Session { user: {id: number, firstName: string, lastName: string, email: string, cover_background: string, profile_background: string}; } }
 require("dotenv").config();

@@ -1,7 +1,7 @@
 import axios from "axios"; 
 import {CreateUser, CookieResponse,
         UserChange, userChange1, 
-        profile, passwordChange, encodedJSON, getUserDetails, cloudinaryResponse, CreateUserResponse} from './AxiosTypes'
+        profile, passwordChange, encodedJSON, getUserDetails, cloudinaryResponse, CreateUserResponse} from './AxiosUserTypes'
 
 
 export async function createUser(user: CreateUser): Promise<CreateUserResponse>{

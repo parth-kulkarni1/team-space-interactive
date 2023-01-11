@@ -9,44 +9,31 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.Post = void 0;
 var typeorm_1 = require("typeorm");
-var User = /** @class */ (function () {
-    function User() {
+var user_1 = require("../User/user");
+var Post = /** @class */ (function () {
+    function Post() {
     }
     __decorate([
         (0, typeorm_1.PrimaryGeneratedColumn)(),
         __metadata("design:type", Number)
-    ], User.prototype, "id", void 0);
+    ], Post.prototype, "post_id", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)("varchar", { length: 50 }),
         __metadata("design:type", String)
-    ], User.prototype, "email", void 0);
+    ], Post.prototype, "title", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
+        (0, typeorm_1.Column)("varchar", { length: 250 }),
         __metadata("design:type", String)
-    ], User.prototype, "firstName", void 0);
+    ], Post.prototype, "body", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
-        __metadata("design:type", String)
-    ], User.prototype, "lastName", void 0);
-    __decorate([
-        (0, typeorm_1.Column)(),
-        __metadata("design:type", String)
-    ], User.prototype, "password", void 0);
-    __decorate([
-        (0, typeorm_1.Column)({ default: "cover-background_hsrl28" }) // Storing the default cover-background that all users will be applied with
-        ,
-        __metadata("design:type", String)
-    ], User.prototype, "cover_background", void 0);
-    __decorate([
-        (0, typeorm_1.Column)({ default: "user_hv9uk1" }) // Storing the default profile pic
-        ,
-        __metadata("design:type", String)
-    ], User.prototype, "profile_background", void 0);
-    User = __decorate([
+        (0, typeorm_1.ManyToOne)(function () { return user_1.User; }),
+        __metadata("design:type", user_1.User)
+    ], Post.prototype, "user", void 0);
+    Post = __decorate([
         (0, typeorm_1.Entity)()
-    ], User);
-    return User;
+    ], Post);
+    return Post;
 }());
-exports.User = User;
+exports.Post = Post;

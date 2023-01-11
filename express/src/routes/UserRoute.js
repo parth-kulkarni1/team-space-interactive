@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 var express_1 = require("express");
 var app_data_source_1 = require("../app-data-source");
-var user_1 = require("../entity/user");
+var user_1 = require("../entity/User/user");
 var express_validator_1 = require("express-validator");
 require("dotenv").config();
 var cloudinary = require("cloudinary").v2;

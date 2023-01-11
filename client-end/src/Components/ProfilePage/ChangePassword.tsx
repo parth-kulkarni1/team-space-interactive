@@ -7,9 +7,9 @@ import './ChangePassword.css'
 import {useContext, useState} from "react"
 import { UserContext } from "../UserContext/UserContext"
 import { TypeChangePassword, errorsType } from "../Types/UserTypes"
-import { updatePassword } from "../../AxiosCommands/AxiosCommands"
+import { updatePassword } from "../../AxiosCommands/User/AxiosUserCommands"
 import {toast } from 'react-toastify';
-import { ChangePasswordValidation } from "../RegistrationPage/Validation"
+import { ChangePasswordValidation } from "../../utils/Validation"
 
 function ChangePassword(){
 

@@ -2,10 +2,10 @@ import {useState, useContext} from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
-import { Validation } from './Validation';
+import { Validation } from '../../utils/Validation';
 
 import './Registration.css'
-import { createUser} from '../../AxiosCommands/AxiosCommands';
+import { createUser} from '../../AxiosCommands/User/AxiosUserCommands';
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext/UserContext';
 import {User, UserErrors} from "../Types/UserTypes";

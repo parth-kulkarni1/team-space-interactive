@@ -1,12 +1,13 @@
-import {findUser } from '../../AxiosCommands/AxiosCommands';
-import { passwordChange } from '../../AxiosCommands/AxiosTypes';
-import { errorsType, profilePageError, TypeProfileChanges, User, UserErrors } from '../Types/UserTypes';
+import {findUser } from '../AxiosCommands/User/AxiosUserCommands';
+import { passwordChange } from '../AxiosCommands/User/AxiosUserTypes';
+import {postValidationType } from '../Components/Types/PostTypes';
+import { errorsType, profilePageError, TypeProfileChanges, User, UserErrors } from '../Components/Types/UserTypes';
 
 
 export async function Validation(user: User): Promise<UserErrors>{
 
 
-       const ErrorsObj: UserErrors = { emailError: "",
+       const ErrorsObj = { emailError: "",
                         firstNameError: "",
                         lastNameError: "",
                         passwordError: "",
@@ -74,7 +75,7 @@ export async function Validation(user: User): Promise<UserErrors>{
 
 
 export function profileValidation(user: TypeProfileChanges): profilePageError{
-      const ErrorsObj: profilePageError = {
+      const ErrorsObj = {
                         firstNameError: "",
                         lastNameError: "",
                         validationSuccess: false}
@@ -116,7 +117,7 @@ export function profileValidation(user: TypeProfileChanges): profilePageError{
 
 export function ChangePasswordValidation(passwords: passwordChange): errorsType{
 
-    const errrors: errorsType = {
+    const errrors = {
         oldPassword: "",
         newPassword: "",
         password: "",
@@ -153,6 +154,45 @@ export function ChangePasswordValidation(passwords: passwordChange): errorsType{
     }
 
     return errrors
+
+
+}
+
+
+export function postValidation(post: postValidationType){
+
+    
+    const errors = {
+        title: "",
+        body: "",
+        validationSuccess: false
+    }
+
+
+    if(post.title.length === 0){
+        errors.title =  "You have to provide a title for your post!"
+    }
+
+    if(post.body.length === 0){
+        errors.body = "You have to provide a body for your post!"
+    }
+
+    if (post.title.length >=51){
+        errors.title = "Post title must be less than 50 characters"
+    }
+
+    if (post.body.length >=251){
+        errors.body = "Post body must be less than 250 characters"
+    }
+
+
+    if(errors.title === '' && errors.body === ''){
+        errors.validationSuccess = true
+    }
+
+
+    return errors
+
 
 
 }
