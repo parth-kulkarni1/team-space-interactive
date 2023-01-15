@@ -2,13 +2,14 @@ import './Home.css'
 import { cld } from '../../utils/Cloudinary'
 import { AdvancedImage } from '@cloudinary/react'
 import { UserContext } from '../UserContext/UserContext'
-import React, {useReducer, useContext, useState, useEffect} from 'react'
+import React, {useReducer, useContext, useEffect} from 'react'
 import { Button, Modal, Form } from 'react-bootstrap'
 import MDEditor from '@uiw/react-md-editor'
 import { createPost, getAllPosts } from '../../AxiosCommands/Post/AxiosPostCommands'
 import { toast } from 'react-toastify'
 import { reducer, initalState } from '../../Reducers/PostReducer'
 import { postValidation } from '../../utils/Validation'
+import moment from 'moment'
 
 function Home(){
 
@@ -17,12 +18,12 @@ function Home(){
     const [state, dispatch] = useReducer(reducer,initalState)
 
 
+
     useEffect(() =>{
         async function findAllPosts(){
-            const {posts} = await getAllPosts();
-
-            console.log(posts)
-
+            await getAllPosts().then(posts => dispatch({type: 'allPosts', payload: posts}))
+            
+            
 
         }
 
@@ -45,6 +46,18 @@ function Home(){
         dispatch({type:false, payload: false})
 
     }
+
+    function getTimeFromUTC(utc_string: string): Array<string>{
+
+        const half  = utc_string.split('T')
+        const time = half[1].split('.')
+
+
+
+        return time
+
+    }
+
 
 
     async function handleSumbit(event: React.FormEvent<HTMLFormElement>){
@@ -78,97 +91,132 @@ function Home(){
 
     }
 
+
+
+
+
     return(
 
-        <div className="page-container">
+        <div className="d-flex flex-column align-items-center page-container">
 
-        <div className='d-flex'>
+            <div className="d-flex align-items-center user-make-a-post">
 
-        <div className="list-user">
-            this section is in development...
-        </div>
+                    <div className='d-flex align-items-center p-3 profile-pic'>
 
-        <div className="post-user">
+                        <AdvancedImage cldImg={cld.image(user.user?.profile_background as string)} className = "post-profile-pic"></AdvancedImage>
+                    </div>
 
-            <div className='d-flex align-items-center user-make-a-post'>
-                <div className='d-flex align-items-center p-3 profile-pic'>
+                    <div className='d-flex modal-launch'>
 
-                    <AdvancedImage cldImg={cld.image(user.user?.profile_background as string)} className = "post-profile-pic"></AdvancedImage>
-                </div>
+                        <Button type = "button" className='button-post' onClick={() => dispatch({type:true, payload: true})}>Make a new post, {user.user?.firstName}</Button>
 
-                <div className='modal-launch'>
+                        <Modal show = {state.show} centered = {true} onHide = {handleClose}>
 
-                    <Button type = "button" className='button-post' onClick={() => dispatch({type:true, payload: true})}>Make a new post, {user.user?.firstName}</Button>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Make a post</Modal.Title>
+                            </Modal.Header>
 
-                    <Modal show = {state.show} centered = {true} onHide = {handleClose}>
+                            <Modal.Body>
 
-                        <Modal.Header closeButton>
-                            <Modal.Title>Make a post</Modal.Title>
-                        </Modal.Header>
+                                <Form noValidate onSubmit={handleSumbit}>
 
-                        <Modal.Body>
+                                    <Form.Control type = "input" 
+                                                placeholder='Write a title for your post...'
+                                                onChange = {(event) => dispatch({type: 'title', payload: event.target.value})}
+                                                isInvalid = {!!state.errors.title}
+                                                ></Form.Control>
 
-                            <Form noValidate onSubmit={handleSumbit}>
+                                    <Form.Control.Feedback type = "invalid">{state.errors.title}</Form.Control.Feedback>
 
-                                <Form.Control type = "input" 
-                                              placeholder='Write a title for your post...'
-                                              onChange = {(event) => dispatch({type: 'title', payload: event.target.value})}
-                                              isInvalid = {!!state.errors.title}
-                                              ></Form.Control>
+                                <br></br>
 
-                                <Form.Control.Feedback type = "invalid">{state.errors.title}</Form.Control.Feedback>
+                                <MDEditor value={state.post.body} 
+                                        onChange = {(value) => dispatch({type:'add', payload: value as string})}
+                                        preview = "edit"
+                                        ></MDEditor>
 
-                            <br></br>
+                                {state.errors.body &&
+                                
+                                <div>
+                                <br></br>
+                                <p className='text-danger'> {state.errors.body}</p>
+                                </div>
 
-                            <MDEditor value={state.post.body} 
-                                    onChange = {(value) => dispatch({type:'add', payload: value as string})}
-                                    preview = "edit"
-                                    ></MDEditor>
-
-                            {state.errors.body &&
-                              
-                              <div>
-                              <br></br>
-                              <p className='text-danger'> {state.errors.body}</p>
-                              </div>
-
+                                
+                                }
                             
-                            }
-                        
-                            <br></br>
+                                <br></br>
 
-                            <div className='d-flex justify-content-between'>
-                                <Button>Add Images To Your Post..</Button>
+                                <div className='d-flex justify-content-between'>
+                                    <Button>Add Images To Your Post..</Button>
 
-                                <Button type = "submit">Sumbit Post</Button>
+                                    <Button type = "submit">Sumbit Post</Button>
 
-                            </div>
+                                </div>
 
-                            </Form>
+                                </Form>
 
 
 
 
-                        </Modal.Body>
+                            </Modal.Body>
 
-                    </Modal>
+                        </Modal>
 
-                </div>
+
+
+                    </div>
+
 
             </div>
 
+            
+            <div className='d-flex flex-column other-post-container'>
+                {state.allPosts.map((element) =>
+
+                <div key={element.post_id} className='d-flex flex-column brr-post p-3'>
+
+                    <div className='d-flex align-items-top user-information'>
+
+                        <div className='user-profile-pic-post'>
+
+                            <AdvancedImage cldImg={cld.image(element.user.profile_background)} className = 'user-profile-pic-post-style'></AdvancedImage>
+
+                        </div>
+
+                        <div className='user-profile-post-information'>
+
+                            <p><b>{element.user.firstName}, {element.user.lastName}</b>  
+                                {moment(element.createdAt).utc().format('YYYY-MM-DD')} 
+                                {getTimeFromUTC(element.createdAt)[0]}</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div className='post-body-content'>
+
+                        <p>{element.body}</p>
+
+
+                    </div>
+                    
+                </div>
+                
+                
+                )}
+
+
+            </div>
+
+
+
+
         </div>
 
-        <div className="network-user">
-            this section is in development...
-        </div>
+       
 
-        </div>
-
-
-
-
-        </div>
 
 
 

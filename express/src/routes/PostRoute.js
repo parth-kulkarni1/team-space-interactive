@@ -44,9 +44,9 @@ var express_validator_1 = require("express-validator");
 var cloudinary = require("cloudinary").v2;
 var post_router = (0, express_1.Router)();
 exports.Postrouter = post_router;
-post_router.post('/post/create', (0, express_validator_1.body)('title').exists({ checkFalsy: true }), (0, express_validator_1.body)('body').exists({ checkFalsy: true }), (0, express_validator_1.body)('user_id').exists({ checkFalsy: true, checkNull: true }), function (req, res, next) {
+post_router.post('/post/create', (0, express_validator_1.body)('title').exists({ checkFalsy: true }), (0, express_validator_1.body)('body').exists({ checkFalsy: true }), (0, express_validator_1.body)('userId').exists({ checkFalsy: true, checkNull: true }), function (req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var errors, user, err_1;
+        var errors, post, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -59,11 +59,11 @@ post_router.post('/post/create', (0, express_validator_1.body)('title').exists({
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).create({
                             title: req.body.title,
                             body: req.body.body,
-                            user: req.body.user_id
+                            user: req.body.userId,
                         })];
                 case 1:
-                    user = _a.sent();
-                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).save(user)];
+                    post = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).save(post)];
                 case 2:
                     _a.sent();
                     res.json({ created: 'done' });
@@ -84,7 +84,19 @@ post_router.get('/posts', function (req, res, next) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find()];
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find({
+                            relations: {
+                                user: true
+                            },
+                            select: {
+                                user: {
+                                    firstName: true,
+                                    lastName: true,
+                                    email: true,
+                                    profile_background: true
+                                }
+                            }
+                        })];
                 case 1:
                     results = _a.sent();
                     res.json(results);

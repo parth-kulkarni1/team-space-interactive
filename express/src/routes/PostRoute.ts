@@ -2,12 +2,13 @@ import { Router, Request, Response, json, query, NextFunction } from "express";
 import { myDataSource } from "../app-data-source"
 import { Post } from "../entity/Posts/post";
 import { body, validationResult, CustomValidator, param, check} from 'express-validator';
+import { User } from "../entity/User/user";
 
 const cloudinary = require("cloudinary").v2
 const post_router = Router();
 
 post_router.post('/post/create', body('title').exists({checkFalsy: true}), body('body').exists({checkFalsy: true}),
-                body('user_id').exists({checkFalsy: true, checkNull: true})
+                body('userId').exists({checkFalsy: true, checkNull: true})
                 ,async function(req: Request, res: Response, next: NextFunction){
 
     try{
@@ -18,14 +19,15 @@ post_router.post('/post/create', body('title').exists({checkFalsy: true}), body(
         if (!errors.isEmpty()){
             return res.send({ errors: errors.array() });
         }
-        
-        const user = await myDataSource.getRepository(Post).create({
+
+    
+        const post = await myDataSource.getRepository(Post).create({
             title: req.body.title, 
             body: req.body.body,
-            user: req.body.user_id 
+            user: req.body.userId,
         })
 
-        await myDataSource.getRepository(Post).save(user)
+        await myDataSource.getRepository(Post).save(post)
 
         res.json({created: 'done'})
 
@@ -42,7 +44,24 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
 
     try{
 
-        const results = await myDataSource.getRepository(Post).find()
+        const results = await myDataSource.getRepository(Post).find({
+            relations : {
+                user: true
+            }, 
+            select: {
+                user:{
+                    firstName: true, 
+                    lastName: true, 
+                    email: true,
+                    profile_background: true
+                }
+            }
+
+        })
+
+
+
+
 
         res.json(results)
 

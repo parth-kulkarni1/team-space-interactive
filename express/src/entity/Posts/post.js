@@ -28,6 +28,10 @@ var Post = /** @class */ (function () {
         __metadata("design:type", String)
     ], Post.prototype, "body", void 0);
     __decorate([
+        (0, typeorm_1.CreateDateColumn)({ type: 'timestamp' }),
+        __metadata("design:type", Date)
+    ], Post.prototype, "createdAt", void 0);
+    __decorate([
         (0, typeorm_1.ManyToOne)(function () { return user_1.User; }),
         __metadata("design:type", user_1.User)
     ], Post.prototype, "user", void 0);
