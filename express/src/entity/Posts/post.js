@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Post = void 0;
 var typeorm_1 = require("typeorm");
+var photos_1 = require("../Image/photos");
 var user_1 = require("../User/user");
 var Post = /** @class */ (function () {
     function Post() {
@@ -35,6 +36,10 @@ var Post = /** @class */ (function () {
         (0, typeorm_1.ManyToOne)(function () { return user_1.User; }),
         __metadata("design:type", user_1.User)
     ], Post.prototype, "user", void 0);
+    __decorate([
+        (0, typeorm_1.OneToMany)(function () { return photos_1.photos; }, function (photo) { return photo.post; }),
+        __metadata("design:type", photos_1.photos)
+    ], Post.prototype, "photo", void 0);
     Post = __decorate([
         (0, typeorm_1.Entity)()
     ], Post);

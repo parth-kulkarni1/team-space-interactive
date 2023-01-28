@@ -9,15 +9,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Image = void 0;
+exports.photos = void 0;
 var typeorm_1 = require("typeorm");
-var Image = /** @class */ (function () {
-    function Image() {
+var post_1 = require("../Posts/post");
+var photos = /** @class */ (function () {
+    function photos() {
     }
     __decorate([
-        (0, typeorm_1.PrimaryColumn)(),
+        (0, typeorm_1.PrimaryGeneratedColumn)(),
         __metadata("design:type", Number)
-    ], Image.prototype, "photo_id", void 0);
-    return Image;
+    ], photos.prototype, "id", void 0);
+    __decorate([
+        (0, typeorm_1.ManyToOne)(function () { return post_1.Post; }, function (post) { return post.photo; }),
+        __metadata("design:type", post_1.Post)
+    ], photos.prototype, "post", void 0);
+    __decorate([
+        (0, typeorm_1.Column)("varchar", { length: 255 }),
+        __metadata("design:type", String)
+    ], photos.prototype, "photo_id", void 0);
+    photos = __decorate([
+        (0, typeorm_1.Entity)()
+    ], photos);
+    return photos;
 }());
-exports.Image = Image;
+exports.photos = photos;

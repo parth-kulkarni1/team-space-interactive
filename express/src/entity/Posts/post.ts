@@ -1,4 +1,5 @@
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, OneToMany, ManyToOne } from "typeorm";
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from "typeorm";
+import { photos } from "../Image/photos";
 import { User } from "../User/user";
 
 @Entity()
@@ -19,6 +20,9 @@ export class Post{
 
     @ManyToOne(() => User)
     user: User
+
+    @OneToMany(() => photos, (photo) => photo.post)
+        photo: photos    
     
 
 

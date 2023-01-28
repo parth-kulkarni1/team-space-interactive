@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getAllPostsResponse, PostInfo, PostResponse } from "./AxiosPostTypes";
+import { getAllPostsResponse, PostInfo, PostResponse, ImageInfo } from "./AxiosPostTypes";
 
 
 export async function createPost(post_info: PostInfo){
@@ -19,6 +19,15 @@ export async function getAllPosts(){
     console.log(data)
 
     return data 
+
+
+}
+
+
+export async function uploadPostImages(){
+    const {data} = await axios.post<ImageInfo>('/post/images')
+
+    return data
 
 
 }

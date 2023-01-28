@@ -1,36 +1,25 @@
 import './Home.css'
-import { cld } from '../../utils/Cloudinary'
+import { UserContext } from '../Contexts/UserContext'
+import React, {useContext, useState} from 'react'
+import { createPost, getAllPosts } from '../AxiosCommands/Post/AxiosPostCommands'
+import { postValidation } from '../utils/Validation'
+import { PostContext } from '../Contexts/PostContext'
+import PostList from './Posts'
+import { Image } from './Image'
+
+import { cld } from '../utils/Cloudinary'
 import { AdvancedImage } from '@cloudinary/react'
-import { UserContext } from '../UserContext/UserContext'
-import React, {useReducer, useContext, useEffect} from 'react'
 import { Button, Modal, Form } from 'react-bootstrap'
 import MDEditor from '@uiw/react-md-editor'
-import { createPost, getAllPosts } from '../../AxiosCommands/Post/AxiosPostCommands'
 import { toast } from 'react-toastify'
-import { reducer, initalState } from '../../Reducers/PostReducer'
-import { postValidation } from '../../utils/Validation'
-import moment from 'moment'
 
 function Home(){
 
     const user = useContext(UserContext);
 
-    const [state, dispatch] = useReducer(reducer,initalState)
+    const {state, dispatch}  = useContext(PostContext)
 
-
-
-    useEffect(() =>{
-        async function findAllPosts(){
-            await getAllPosts().then(posts => dispatch({type: 'allPosts', payload: posts}))
-            
-            
-
-        }
-
-        findAllPosts();
-
-
-    }, [])
+    const [isSubmitting, setSumbitting] = useState<boolean>(false)
 
 
     function handleClose(){
@@ -39,31 +28,29 @@ function Home(){
         but closes the modaal window, 
         so if they reopen it their old inputs are not displayed and cleared accordingly.. */
         
+
+
         dispatch({type: "resetPost", payload: ""})
 
         dispatch({type:"errors", payload: {title: "", body: ""}})
 
         dispatch({type:false, payload: false})
 
-    }
+        dispatch({type: 'title', payload: ''})
 
-    function getTimeFromUTC(utc_string: string): Array<string>{
+        dispatch({type: 'image', payload: []})
 
-        const half  = utc_string.split('T')
-        const time = half[1].split('.')
+        dispatch({type: 'upload', payload: ''})
 
+        setSumbitting(false)
 
-
-        return time
 
     }
-
-
+    
 
     async function handleSumbit(event: React.FormEvent<HTMLFormElement>){
         event.preventDefault();
-
-        const error = postValidation(state.post)
+        const error = postValidation(state.ownPost)
 
         if (!error.validationSuccess){
             dispatch({type: "errors", payload: error})
@@ -71,23 +58,25 @@ function Home(){
             return
         }
 
-        state.post.userId = user.user?.id as number // Storing the User ID (Primary Key) within here..
+        setSumbitting(true)
+
+        state.ownPost.userId = user.user?.id as number // Storing the User ID (Primary Key) within here..
 
 
-        const {created} = await toast.promise(createPost(state.post), {
+        await toast.promise(createPost(state.ownPost), {
 
             pending: "Your posting is uploading...",
-            success: "Your post has been uploaded", 
+            success: "Your post has been uploaded",  
             error: "Something has gone wrong..."
 
 
-        })
+        }).catch(err => console.log(err))
 
+        dispatch({type: 'upload', payload: 'done'})
+    
 
-        dispatch({type: false, payload: false}) // Hide the modal after user has sumbitted the post
-        dispatch({type: 'add', payload: ''}) // Reset the body in markdown editor by resetting its state
+        handleClose()
 
-        // Add axios commands here..
 
     }
 
@@ -99,7 +88,7 @@ function Home(){
 
         <div className="d-flex flex-column align-items-center page-container">
 
-            <div className="d-flex align-items-center user-make-a-post">
+            <div className="d-flex align-items-center justify-content-around p-2 user-make-a-post">
 
                     <div className='d-flex align-items-center p-3 profile-pic'>
 
@@ -130,8 +119,8 @@ function Home(){
 
                                 <br></br>
 
-                                <MDEditor value={state.post.body} 
-                                        onChange = {(value) => dispatch({type:'add', payload: value as string})}
+                                <MDEditor value={state.ownPost.body} 
+                                        onChange = {(value) =>dispatch({type:'body', payload: value as string})}
                                         preview = "edit"
                                         ></MDEditor>
 
@@ -147,12 +136,15 @@ function Home(){
                             
                                 <br></br>
 
-                                <div className='d-flex justify-content-between'>
-                                    <Button>Add Images To Your Post..</Button>
+                                <div className='d-flex flex-column post-buttons'>
 
-                                    <Button type = "submit">Sumbit Post</Button>
+                                    <Image />
+
+                                    <Button type = "submit" disabled = {isSubmitting}>Sumbit Post</Button>
+    
 
                                 </div>
+
 
                                 </Form>
 
@@ -170,45 +162,11 @@ function Home(){
 
             </div>
 
-            
-            <div className='d-flex flex-column other-post-container'>
-                {state.allPosts.map((element) =>
-
-                <div key={element.post_id} className='d-flex flex-column brr-post p-3'>
-
-                    <div className='d-flex align-items-top user-information'>
-
-                        <div className='user-profile-pic-post'>
-
-                            <AdvancedImage cldImg={cld.image(element.user.profile_background)} className = 'user-profile-pic-post-style'></AdvancedImage>
-
-                        </div>
-
-                        <div className='user-profile-post-information'>
-
-                            <p><b>{element.user.firstName}, {element.user.lastName}</b>  
-                                {moment(element.createdAt).utc().format('YYYY-MM-DD')} 
-                                {getTimeFromUTC(element.createdAt)[0]}</p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div className='post-body-content'>
-
-                        <p>{element.body}</p>
-
-
-                    </div>
+ 
                     
-                </div>
+                    <PostList /> 
                 
-                
-                )}
 
-
-            </div>
 
 
 
@@ -222,6 +180,7 @@ function Home(){
 
     )
 }
+
 
 
 export default Home

@@ -1,8 +1,10 @@
 import { Router, Request, Response, json, query, NextFunction } from "express";
 import { myDataSource } from "../app-data-source"
 import { Post } from "../entity/Posts/post";
-import { body, validationResult, CustomValidator, param, check} from 'express-validator';
-import { User } from "../entity/User/user";
+import { body, validationResult} from 'express-validator';
+import { photos } from "../entity/Image/photos";
+require("dotenv").config();
+
 
 const cloudinary = require("cloudinary").v2
 const post_router = Router();
@@ -25,13 +27,41 @@ post_router.post('/post/create', body('title').exists({checkFalsy: true}), body(
             title: req.body.title, 
             body: req.body.body,
             user: req.body.userId,
+            
         })
 
-        await myDataSource.getRepository(Post).save(post)
+        const saved_post = await myDataSource.getRepository(Post).save(post)
+
+        for(let i = 0; i < req.body.images.length; i++){
+
+            const uploadedResponse = await cloudinary.uploader.upload(req.body.images[i], {
+                width: 500,
+                height: 500,
+                crop: "fit",
+                quality: "auto",
+                fetch_format: "auto"
+
+
+            })
+
+            cloudinary.image()
+
+            const images = await myDataSource.getRepository(photos).create({
+                photo_id: uploadedResponse.public_id,
+                post: saved_post
+                
+            })
+
+
+            await myDataSource.getRepository(photos).save(images)
+
+        }
+
 
         res.json({created: 'done'})
 
     } catch(err){
+        console.log(err)
         next(err)
     }
 
@@ -46,7 +76,8 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
 
         const results = await myDataSource.getRepository(Post).find({
             relations : {
-                user: true
+                user: true,
+                photo: true
             }, 
             select: {
                 user:{
@@ -54,6 +85,9 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
                     lastName: true, 
                     email: true,
                     profile_background: true
+                }, 
+                photo: {
+                    photo_id: true
                 }
             }
 
@@ -73,6 +107,7 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
 
 
 })
+
 
 
 

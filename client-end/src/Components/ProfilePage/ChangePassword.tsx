@@ -5,11 +5,11 @@ import './ChangePassword.css'
 
 
 import {useContext, useState} from "react"
-import { UserContext } from "../UserContext/UserContext"
+import { UserContext } from "../Contexts/UserContext"
 import { TypeChangePassword, errorsType } from "../Types/UserTypes"
-import { updatePassword } from "../../AxiosCommands/User/AxiosUserCommands"
+import { updatePassword } from "../AxiosCommands/User/AxiosUserCommands"
 import {toast } from 'react-toastify';
-import { ChangePasswordValidation } from "../../utils/Validation"
+import { ChangePasswordValidation } from "../utils/Validation"
 
 function ChangePassword(){
 

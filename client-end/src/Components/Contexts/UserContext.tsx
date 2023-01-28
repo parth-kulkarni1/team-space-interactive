@@ -1,5 +1,5 @@
 import React, {createContext, useEffect, useState} from "react";
-import { findCookie } from "../../AxiosCommands/User/AxiosUserCommands";
+import { findCookie } from "../AxiosCommands/User/AxiosUserCommands";
 import { aUserContext as User } from "../Types/UserTypes";
    
     

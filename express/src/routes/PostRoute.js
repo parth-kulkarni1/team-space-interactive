@@ -41,16 +41,18 @@ var express_1 = require("express");
 var app_data_source_1 = require("../app-data-source");
 var post_1 = require("../entity/Posts/post");
 var express_validator_1 = require("express-validator");
+var photos_1 = require("../entity/Image/photos");
+require("dotenv").config();
 var cloudinary = require("cloudinary").v2;
 var post_router = (0, express_1.Router)();
 exports.Postrouter = post_router;
 post_router.post('/post/create', (0, express_validator_1.body)('title').exists({ checkFalsy: true }), (0, express_validator_1.body)('body').exists({ checkFalsy: true }), (0, express_validator_1.body)('userId').exists({ checkFalsy: true, checkNull: true }), function (req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var errors, post, err_1;
+        var errors, post, saved_post, i, uploadedResponse, images, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 3, , 4]);
+                    _a.trys.push([0, 9, , 10]);
                     errors = (0, express_validator_1.validationResult)(req);
                     console.log(errors);
                     if (!errors.isEmpty()) {
@@ -65,14 +67,43 @@ post_router.post('/post/create', (0, express_validator_1.body)('title').exists({
                     post = _a.sent();
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).save(post)];
                 case 2:
-                    _a.sent();
-                    res.json({ created: 'done' });
-                    return [3 /*break*/, 4];
+                    saved_post = _a.sent();
+                    i = 0;
+                    _a.label = 3;
                 case 3:
+                    if (!(i < req.body.images.length)) return [3 /*break*/, 8];
+                    return [4 /*yield*/, cloudinary.uploader.upload(req.body.images[i], {
+                            width: 500,
+                            height: 500,
+                            crop: "fit",
+                            quality: "auto",
+                            fetch_format: "auto"
+                        })];
+                case 4:
+                    uploadedResponse = _a.sent();
+                    cloudinary.image();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).create({
+                            photo_id: uploadedResponse.public_id,
+                            post: saved_post
+                        })];
+                case 5:
+                    images = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).save(images)];
+                case 6:
+                    _a.sent();
+                    _a.label = 7;
+                case 7:
+                    i++;
+                    return [3 /*break*/, 3];
+                case 8:
+                    res.json({ created: 'done' });
+                    return [3 /*break*/, 10];
+                case 9:
                     err_1 = _a.sent();
+                    console.log(err_1);
                     next(err_1);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
+                    return [3 /*break*/, 10];
+                case 10: return [2 /*return*/];
             }
         });
     });
@@ -86,7 +117,8 @@ post_router.get('/posts', function (req, res, next) {
                     _a.trys.push([0, 2, , 3]);
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find({
                             relations: {
-                                user: true
+                                user: true,
+                                photo: true
                             },
                             select: {
                                 user: {
@@ -94,6 +126,9 @@ post_router.get('/posts', function (req, res, next) {
                                     lastName: true,
                                     email: true,
                                     profile_background: true
+                                },
+                                photo: {
+                                    photo_id: true
                                 }
                             }
                         })];

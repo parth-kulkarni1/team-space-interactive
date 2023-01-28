@@ -305,7 +305,7 @@ rootRouter.post("/user/profile/images", async function (req: Request, res: Respo
 
     }
 
-    const results = await myDataSource.getRepository(User).save(user)
+    await myDataSource.getRepository(User).save(user)
 
 
 

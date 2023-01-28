@@ -6,8 +6,8 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
 import { UserLogin } from '../Types/UserTypes';
-import { verifyUser } from '../../AxiosCommands/User/AxiosUserCommands';
-import {UserContext} from '../UserContext/UserContext';
+import { verifyUser } from '../AxiosCommands/User/AxiosUserCommands';
+import {UserContext} from '../Contexts/UserContext';
 import { toast } from 'react-toastify';
 
 

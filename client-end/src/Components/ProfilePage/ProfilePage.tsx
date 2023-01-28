@@ -5,15 +5,16 @@ import {Form} from "react-bootstrap"
 import Modal from 'react-bootstrap/Modal';
 import './ProfilePage.css'
 
-import { UserContext } from '../UserContext/UserContext';
+import { UserContext } from '../Contexts/UserContext';
 import {TypeProfileChanges, profilePageError} from "../Types/UserTypes"
-import {updateUser, deleteAccount, logoutUser, uploadCoverImageCloudinary} from "../../AxiosCommands/User/AxiosUserCommands";
+import {updateUser, deleteAccount, logoutUser, uploadCoverImageCloudinary} from "../AxiosCommands/User/AxiosUserCommands";
 import {AdvancedImage} from '@cloudinary/react';
-import { cld } from "../../utils/Cloudinary";
+import { cld } from "../utils/Cloudinary";
 import {thumbnail} from "@cloudinary/url-gen/actions/resize";
 import { byRadius } from "@cloudinary/url-gen/actions/roundCorners";
 import {toast } from 'react-toastify';
-import { profileValidation } from "../../utils/Validation";
+import { profileValidation } from "../utils/Validation";
+import { previewFile } from "../ImageHandlingLogic/ImageHandle";
 
 function ProfilePage(){
 
@@ -48,7 +49,9 @@ function ProfilePage(){
     const handleShow = () => setShow(true)
 
 
-    function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>): void{
+    
+
+    async function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>): Promise<void>{
 
         if(!e.target.files){
             return;
@@ -56,38 +59,23 @@ function ProfilePage(){
 
         const file : File = e.target.files[0];
 
-        if(e.target.name === "coverImage"){
-                previewFile(file, e.target.name);
+        const result = await previewFile(file, e.target.name)
+
+        if (result.type === "coverImage"){
+                setPreviewImage(result.base64)
         }
 
         else{
-            previewFile(file, e.target.name)
+            setPreviewImageProfile(result.base64)
         }
+
 
 
     }
 
-    function previewFile(file : File, type: string){
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-
-        if(type === "coverImage"){
-
-            reader.onloadend = () =>{
-                setPreviewImage(reader.result as string)
-            }
-
-        }
-
-        else{
-            reader.onloadend = () =>{
-                setPreviewImageProfile(reader.result as string)
-            }
-        }
 
 
-    }
-
+    
     function handleChange <P extends keyof TypeProfileChanges>(prop: P, value:TypeProfileChanges[P] ): void{
 
         if(profile){

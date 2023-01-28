@@ -306,7 +306,7 @@ rootRouter.delete("/user/delete/:id", function (req, res) {
 });
 rootRouter.post("/user/profile/images", function (req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var fileEncoded, uploadedImageType, uploadedResponse, user, results;
+        var fileEncoded, uploadedImageType, uploadedResponse, user;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -334,7 +334,7 @@ rootRouter.post("/user/profile/images", function (req, res) {
                     }
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).save(user)];
                 case 3:
-                    results = _a.sent();
+                    _a.sent();
                     console.log(uploadedResponse);
                     res.json({ "background": uploadedResponse.public_id });
                     return [2 /*return*/];

@@ -15,7 +15,7 @@
 .post-from-all-users{
     background-color: gray;
     gap:80px;
-    width: 90%;
+    width: auto;
 }
 
 .post-profile-pic{
@@ -29,7 +29,8 @@
 .brr-post{
     background-color: #FAF9F6    ;
     border-radius: 5px;
-    height: 300px;
+    height: auto;
+    width: auto;
     gap: 50px
 
 }
@@ -46,4 +47,20 @@
 
 .user-information{
     gap: 30px
+}
+
+.post-buttons{
+    gap:50px
+}
+
+.user-profile-post-information{
+    gap: 15px
+}
+
+.post-images{
+    width: 200px;
+}
+
+.post-images-container{
+    gap: 50px
 }

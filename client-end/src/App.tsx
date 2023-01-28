@@ -6,8 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
-import PrivateRoutes from "./utils/PrivateRoutes";
-import { UserContextProvider } from "./Components/UserContext/UserContext";
+import PrivateRoutes from "../src/Components/utils/PrivateRoutes";
+import { UserContextProvider } from "./Components/Contexts/UserContext";
 
 
 /* Contains all relevant imports below */
@@ -23,6 +23,8 @@ import ProfilePage from "./Components/ProfilePage/ProfilePage";
 import ChangePassword from "./Components/ProfilePage/ChangePassword";
 
 import Home from "./Components/Home/Home";
+import { PostsContextProvider } from "./Components/Contexts/PostContext";
+import PostList from "./Components/Home/Posts";
 
 /* ------------------------------------ */
 
@@ -36,6 +38,9 @@ function App() {
     <BrowserRouter>
 
      <UserContextProvider>
+
+     <PostsContextProvider>
+
 
       <ToastContainer position="top-right" />
   
@@ -52,13 +57,17 @@ function App() {
           <Route element = {<PrivateRoutes />} >
             <Route path="/Profile" element = {<ProfilePage />}></Route>
             <Route path="/ChangePassword" element = {<ChangePassword />}></Route>
-            <Route path = "/Home" element = {<Home />}></Route>
+              <Route path = "/Home" element = {<Home />}></Route>
+          
           </Route>
           
 
         </Routes>
 
         <Footer />
+
+        </PostsContextProvider>
+
 
 
         </UserContextProvider>

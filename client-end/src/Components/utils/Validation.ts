@@ -1,7 +1,7 @@
-import {findUser } from '../AxiosCommands/User/AxiosUserCommands';
+import {findUser } from '../AxiosCommands/User/AxiosUserCommands'
 import { passwordChange } from '../AxiosCommands/User/AxiosUserTypes';
-import {postValidationType } from '../Components/Types/PostTypes';
-import { errorsType, profilePageError, TypeProfileChanges, User, UserErrors } from '../Components/Types/UserTypes';
+import {postValidationType } from '../Types/PostTypes';
+import { errorsType, profilePageError, TypeProfileChanges, User, UserErrors } from '../Types/UserTypes';
 
 
 export async function Validation(user: User): Promise<UserErrors>{
@@ -177,8 +177,12 @@ export function postValidation(post: postValidationType){
         errors.body = "You have to provide a body for your post!"
     }
 
-    if (post.title.length >=51){
-        errors.title = "Post title must be less than 50 characters"
+    if (post.title.length >=100){
+        errors.title = "Post title must be less than 100 characters"
+    }
+
+    if (post.title.length <= 2){
+        errors.title = "Post title cannot be so short."
     }
 
     if (post.body.length >=251){

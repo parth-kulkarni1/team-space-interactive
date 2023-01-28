@@ -3,14 +3,14 @@ import {LinkContainer} from 'react-router-bootstrap'
 
 
 
-import {findCookie, logoutUser } from "../../AxiosCommands/User/AxiosUserCommands";
+import {findCookie, logoutUser } from "../AxiosCommands/User/AxiosUserCommands";
 
 
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { User, aUserContext } from "../Types/UserTypes";
-import { UserContext } from "../UserContext/UserContext";
+import { UserContext } from "../Contexts/UserContext";
 
 
 function Header(){
