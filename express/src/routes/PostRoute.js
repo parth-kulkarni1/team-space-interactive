@@ -48,11 +48,11 @@ var post_router = (0, express_1.Router)();
 exports.Postrouter = post_router;
 post_router.post('/post/create', (0, express_validator_1.body)('title').exists({ checkFalsy: true }), (0, express_validator_1.body)('body').exists({ checkFalsy: true }), (0, express_validator_1.body)('userId').exists({ checkFalsy: true, checkNull: true }), function (req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var errors, post, saved_post, i, uploadedResponse, images, err_1;
+        var errors, post, saved_post, i, uploadedResponse, images, results, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 9, , 10]);
+                    _a.trys.push([0, 10, , 11]);
                     errors = (0, express_validator_1.validationResult)(req);
                     console.log(errors);
                     if (!errors.isEmpty()) {
@@ -73,15 +73,14 @@ post_router.post('/post/create', (0, express_validator_1.body)('title').exists({
                 case 3:
                     if (!(i < req.body.images.length)) return [3 /*break*/, 8];
                     return [4 /*yield*/, cloudinary.uploader.upload(req.body.images[i], {
-                            width: 500,
-                            height: 500,
+                            width: 300,
+                            height: 300,
                             crop: "fit",
                             quality: "auto",
                             fetch_format: "auto"
                         })];
                 case 4:
                     uploadedResponse = _a.sent();
-                    cloudinary.image();
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).create({
                             photo_id: uploadedResponse.public_id,
                             post: saved_post
@@ -95,15 +94,19 @@ post_router.post('/post/create', (0, express_validator_1.body)('title').exists({
                 case 7:
                     i++;
                     return [3 /*break*/, 3];
-                case 8:
-                    res.json({ created: 'done' });
-                    return [3 /*break*/, 10];
+                case 8: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
+                        post_id: saved_post.post_id
+                    })];
                 case 9:
+                    results = _a.sent();
+                    res.json(results);
+                    return [3 /*break*/, 11];
+                case 10:
                     err_1 = _a.sent();
                     console.log(err_1);
                     next(err_1);
-                    return [3 /*break*/, 10];
-                case 10: return [2 /*return*/];
+                    return [3 /*break*/, 11];
+                case 11: return [2 /*return*/];
             }
         });
     });
@@ -115,25 +118,10 @@ post_router.get('/posts', function (req, res, next) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find({
-                            relations: {
-                                user: true,
-                                photo: true
-                            },
-                            select: {
-                                user: {
-                                    firstName: true,
-                                    lastName: true,
-                                    email: true,
-                                    profile_background: true
-                                },
-                                photo: {
-                                    photo_id: true
-                                }
-                            }
-                        })];
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find()]; // Finds all entites with eager loading... inlcudes post, user and photo object
                 case 1:
-                    results = _a.sent();
+                    results = _a.sent() // Finds all entites with eager loading... inlcudes post, user and photo object
+                    ;
                     res.json(results);
                     return [3 /*break*/, 3];
                 case 2:
@@ -141,6 +129,92 @@ post_router.get('/posts', function (req, res, next) {
                     next(err_2);
                     return [3 /*break*/, 3];
                 case 3: return [2 /*return*/];
+            }
+        });
+    });
+});
+post_router.put('/post/update', (0, express_validator_1.body)('post.title').exists({ checkFalsy: true }), (0, express_validator_1.body)('post.body').exists({ checkFalsy: true }), function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var errors, post, obj, result, i, image, i, uploadedResponse, images, apost, err_3;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 16, , 17]);
+                    errors = (0, express_validator_1.validationResult)(req);
+                    console.log(errors);
+                    if (!errors.isEmpty()) {
+                        return [2 /*return*/, res.send({ errors: errors.array() })];
+                    }
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
+                            post_id: req.body.post.post_id
+                        })];
+                case 1:
+                    post = _a.sent();
+                    obj = { title: req.body.post.title, body: req.body.post.body };
+                    app_data_source_1.myDataSource.getRepository(post_1.Post).merge(post, obj);
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).save(post)];
+                case 2:
+                    result = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).update(post.post_id, { createdAt: new Date() })];
+                case 3:
+                    _a.sent();
+                    if (!(req.body.imageHandling.deletedImages.length >= 1)) return [3 /*break*/, 8];
+                    i = 0;
+                    _a.label = 4;
+                case 4:
+                    if (!(i < req.body.imageHandling.deletedImages.length)) return [3 /*break*/, 8];
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).findOneBy({
+                            photo_id: req.body.imageHandling.deletedImages[i]
+                        })];
+                case 5:
+                    image = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).remove(image)];
+                case 6:
+                    _a.sent();
+                    _a.label = 7;
+                case 7:
+                    i++;
+                    return [3 /*break*/, 4];
+                case 8:
+                    if (!(req.body.imageHandling.localImages.length >= 1)) return [3 /*break*/, 14];
+                    i = 0;
+                    _a.label = 9;
+                case 9:
+                    if (!(i < req.body.imageHandling.localImages.length)) return [3 /*break*/, 14];
+                    return [4 /*yield*/, cloudinary.uploader.upload(req.body.imageHandling.localImages[i], {
+                            width: 300,
+                            height: 300,
+                            crop: "fit",
+                            quality: "auto",
+                            fetch_format: "auto"
+                        })];
+                case 10:
+                    uploadedResponse = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).create({
+                            photo_id: uploadedResponse.public_id,
+                            post: result
+                        })];
+                case 11:
+                    images = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).save(images)];
+                case 12:
+                    _a.sent();
+                    _a.label = 13;
+                case 13:
+                    i++;
+                    return [3 /*break*/, 9];
+                case 14: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
+                        post_id: req.body.post.post_id
+                    })];
+                case 15:
+                    apost = _a.sent();
+                    res.json(apost);
+                    return [3 /*break*/, 17];
+                case 16:
+                    err_3 = _a.sent();
+                    next(err_3);
+                    return [3 /*break*/, 17];
+                case 17: return [2 /*return*/];
             }
         });
     });

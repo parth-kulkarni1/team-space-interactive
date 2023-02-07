@@ -35,8 +35,8 @@ post_router.post('/post/create', body('title').exists({checkFalsy: true}), body(
         for(let i = 0; i < req.body.images.length; i++){
 
             const uploadedResponse = await cloudinary.uploader.upload(req.body.images[i], {
-                width: 500,
-                height: 500,
+                width: 300,
+                height: 300,
                 crop: "fit",
                 quality: "auto",
                 fetch_format: "auto"
@@ -44,7 +44,6 @@ post_router.post('/post/create', body('title').exists({checkFalsy: true}), body(
 
             })
 
-            cloudinary.image()
 
             const images = await myDataSource.getRepository(photos).create({
                 photo_id: uploadedResponse.public_id,
@@ -57,8 +56,11 @@ post_router.post('/post/create', body('title').exists({checkFalsy: true}), body(
 
         }
 
+        const results = await myDataSource.getRepository(Post).findOneBy({
+            post_id: saved_post.post_id
+        })
 
-        res.json({created: 'done'})
+        res.json(results)
 
     } catch(err){
         console.log(err)
@@ -74,28 +76,7 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
 
     try{
 
-        const results = await myDataSource.getRepository(Post).find({
-            relations : {
-                user: true,
-                photo: true
-            }, 
-            select: {
-                user:{
-                    firstName: true, 
-                    lastName: true, 
-                    email: true,
-                    profile_background: true
-                }, 
-                photo: {
-                    photo_id: true
-                }
-            }
-
-        })
-
-
-
-
+        const results = await myDataSource.getRepository(Post).find() // Finds all entites with eager loading... inlcudes post, user and photo object
 
         res.json(results)
 
@@ -108,7 +89,89 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
 
 })
 
+post_router.put('/post/update', body('post.title').exists({checkFalsy: true}), body('post.body').exists({checkFalsy: true}),
+async function(req: Request, res: Response, next: NextFunction){
 
+    try{
+        const errors = validationResult(req);
+        console.log(errors)
+
+        if (!errors.isEmpty()){
+        return res.send({ errors: errors.array() });
+        }
+
+        const post = await myDataSource.getRepository(Post).findOneBy({
+            post_id: req.body.post.post_id
+        })
+
+        const obj = {title: req.body.post.title, body: req.body.post.body}
+
+        myDataSource.getRepository(Post).merge(post, obj)
+
+        const result = await myDataSource.getRepository(Post).save(post)
+
+        await myDataSource.getRepository(Post).update(post.post_id, {createdAt: new Date()})
+
+        if (req.body.imageHandling.deletedImages.length >= 1){
+
+            for(let i = 0; i < req.body.imageHandling.deletedImages.length; i++){
+                const image = await myDataSource.getRepository(photos).findOneBy({
+                    photo_id: req.body.imageHandling.deletedImages[i]
+                })
+
+                await myDataSource.getRepository(photos).remove(image)
+            }
+
+        }
+
+        if (req.body.imageHandling.localImages.length >=1){
+
+            for(let i = 0; i < req.body.imageHandling.localImages.length; i++){
+
+                
+                const uploadedResponse = await cloudinary.uploader.upload(req.body.imageHandling.localImages[i], {
+                    width: 300,
+                    height: 300,
+                    crop: "fit",
+                    quality: "auto",
+                    fetch_format: "auto"
+
+
+                })
+
+            
+
+
+                const images = await myDataSource.getRepository(photos).create({
+                    photo_id: uploadedResponse.public_id,
+                    post: result
+                    
+                })
+
+
+                await myDataSource.getRepository(photos).save(images)
+                
+                }
+
+        }
+
+
+
+        const apost = await myDataSource.getRepository(Post).findOneBy({
+            post_id: req.body.post.post_id
+        })
+        
+
+        res.json(apost)
+
+        
+
+    } catch(err){
+        next(err)
+    }
+
+
+    })
 
 
 const rootRouter = Router();

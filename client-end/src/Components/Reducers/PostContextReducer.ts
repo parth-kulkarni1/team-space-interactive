@@ -1,4 +1,6 @@
-import { postStructure } from "../Contexts/PostContext"
+import { act } from "@testing-library/react"
+import { PostResponse } from "../AxiosCommands/Post/AxiosPostTypes"
+import { imageType, postStructure, postStructureEdit } from "../Contexts/PostContext"
 import { CurrentAction, CurrentState, postUser, Errors} from "../Contexts/PostContext"
 
 export function postReducer(state: CurrentState, action: CurrentAction): CurrentState{
@@ -33,6 +35,30 @@ export function postReducer(state: CurrentState, action: CurrentAction): Current
             return {...state, ownPost: {...state.ownPost, images: action.payload as string[]}}
 
         
+        case 'cloudinaryimage': 
+            return {...state, edit: {...state.edit, post : {...state.edit.post, photo: action.payload as imageType[]}}}
+
+        case 'edit':
+            return {...state, edit : {...state.edit, status: true, post: action.payload as postStructureEdit}
+
+        }
+
+        case 'reset':
+            return {...state, edit: {...state.edit, status: false, post: action.payload as postStructureEdit}}
+
+
+        case 'localPost': 
+
+            return {...state, post: [action.payload as postStructure, ...state.post]}
+
+        case 'updateEdited':
+            const payload = action.payload as postStructure
+
+            return {...state, post: [payload, ...state.post.filter(post => post.post_id !== payload.post_id)]}
+
+        case 'addDeleted':
+
+            return{...state, edit: {...state.edit, imageHandling: {...state.edit.imageHandling, deletedImages: [...state.edit.imageHandling.deletedImages, action.payload as string]}}}
 
 
 

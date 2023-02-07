@@ -18,7 +18,12 @@ export type Post = {
 }
 
 export type PostResponse = {
-    'created': string
+    title: string,
+    body: string,
+    createdAt: string, 
+    post_id: number, 
+    user: post_obj_user,
+    photo: imageType[]
 }
 
 export type getAllPostsResponse = {

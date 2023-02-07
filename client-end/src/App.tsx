@@ -24,7 +24,7 @@ import ChangePassword from "./Components/ProfilePage/ChangePassword";
 
 import Home from "./Components/Home/Home";
 import { PostsContextProvider } from "./Components/Contexts/PostContext";
-import PostList from "./Components/Home/Posts";
+import PostList from "./Components/Post/Posts";
 
 /* ------------------------------------ */
 

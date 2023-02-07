@@ -33,15 +33,23 @@ var Post = /** @class */ (function () {
         __metadata("design:type", Date)
     ], Post.prototype, "createdAt", void 0);
     __decorate([
-        (0, typeorm_1.ManyToOne)(function () { return user_1.User; }),
+        (0, typeorm_1.ManyToOne)(function () { return user_1.User; }, {
+            eager: true
+        }),
         __metadata("design:type", user_1.User)
     ], Post.prototype, "user", void 0);
     __decorate([
-        (0, typeorm_1.OneToMany)(function () { return photos_1.photos; }, function (photo) { return photo.post; }),
+        (0, typeorm_1.OneToMany)(function () { return photos_1.photos; }, function (photo) { return photo.post; }, {
+            eager: true
+        }),
         __metadata("design:type", photos_1.photos)
     ], Post.prototype, "photo", void 0);
     Post = __decorate([
-        (0, typeorm_1.Entity)()
+        (0, typeorm_1.Entity)({
+            orderBy: {
+                post_id: "DESC"
+            }
+        })
     ], Post);
     return Post;
 }());

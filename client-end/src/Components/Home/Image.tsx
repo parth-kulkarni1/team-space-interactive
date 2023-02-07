@@ -1,9 +1,11 @@
 import React, {useRef, useContext} from 'react'
 import './Image.css'
-import { PostContext } from '../Contexts/PostContext'
+import { imageType, PostContext } from '../Contexts/PostContext'
 
 
 import { Button } from 'react-bootstrap'
+import { AdvancedImage } from '@cloudinary/react'
+import { cld } from '../utils/Cloudinary'
 
 
 export function Image(){
@@ -34,6 +36,15 @@ export function Image(){
             return
         }
 
+        if(state.edit.post.photo.length + state.ownPost.images.length === 4){
+            window.alert("You can only include 4 photos per post..")
+            if(ref.current){
+                ref.current.value = '';
+            }
+            return
+        }
+
+
         //Spread array to current state preview URLs
         for (let i = 0; i < filesList.length; i++) {
     
@@ -54,8 +65,11 @@ export function Image(){
     };
 
 
-        function handleImageDelete(event: React.FormEvent<HTMLButtonElement>){
-            event.preventDefault();
+    function handleImageDelete(event: React.FormEvent<HTMLButtonElement>){
+        event.preventDefault();
+
+
+        if(state.ownPost.images.length ){
 
             const image_to_remove: string = state.ownPost.images[parseInt(event.currentTarget.id)]
 
@@ -63,10 +77,30 @@ export function Image(){
 
             dispatch({type: 'image', payload: updated_images})
 
-            if(updated_images.length === 0){
+        }
 
-                if(ref.current){
-                    ref.current.value = '';
+
+        if(state.edit.post.photo){
+
+                const image_to_remove = state.edit.post.photo.find(element => element.photo_id === event.currentTarget.id)
+                
+                const updated = state.edit.post.photo.filter((photo) => photo !== image_to_remove)
+
+
+                dispatch({type: 'cloudinaryimage', payload: updated as imageType[]})
+
+                dispatch({type: 'addDeleted', payload: image_to_remove?.photo_id as string})
+
+
+
+            }
+
+
+
+        if(state.ownPost.images.length === 0 || state.edit.post.photo?.length === 0){
+
+            if(ref.current){
+                ref.current.value = '';
             }
 
         }
@@ -87,11 +121,27 @@ export function Image(){
                 state.ownPost.images.map((element: string, index) =>
                         <div className='d-flex flex-column delete-buttons'>
 
-                                <img src = {element} alt = '' className='imagesk' id = {String(index)}></img>
+                                <img src = {element} alt = '' className='imagesk'></img>
                                 <Button id = {String(index)} onClick = {handleImageDelete}>Delete Image</Button>
 
                         </div>
 
+                )}
+
+
+                {state.edit.status && 
+
+
+                state.edit.post.photo?.map((pic, index) =>
+
+                    <div className='d-flex flex-column delete-buttons'>
+
+                        <AdvancedImage cldImg={cld.image(pic.photo_id)} className = 'imagesk' />
+
+                        <Button id = {pic.photo_id} onClick = {handleImageDelete}>Delete Image</Button>
+
+                    </div>
+                
                 )}
 
             </div> 
