@@ -1,7 +1,7 @@
 import { Router, Request, Response, json, query, NextFunction } from "express";
 import { myDataSource } from "../app-data-source"
 import { Post } from "../entity/Posts/post";
-import { body, validationResult} from 'express-validator';
+import { body, param, validationResult} from 'express-validator';
 import { photos } from "../entity/Image/photos";
 require("dotenv").config();
 
@@ -172,6 +172,33 @@ async function(req: Request, res: Response, next: NextFunction){
 
 
     })
+
+
+post_router.delete('/post/delete/:id', param('id').exists(), async function(req: Request, res: Response, next: NextFunction){
+
+    const errors = validationResult(req);
+    console.log(errors)
+
+    if (!errors.isEmpty()){
+    return res.send({ errors: errors.array() });
+    }
+
+
+    try{
+
+        const post = await myDataSource.getRepository(Post).delete(req.params.id) // This will cascade into deleting all images as well..
+
+        res.sendStatus(200) // Post Successfully has been deleted
+
+
+    }catch(err){
+        next(err)
+    }
+
+
+
+
+})
 
 
 const rootRouter = Router();

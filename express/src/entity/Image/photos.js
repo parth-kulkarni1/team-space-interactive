@@ -20,7 +20,9 @@ var photos = /** @class */ (function () {
         __metadata("design:type", Number)
     ], photos.prototype, "id", void 0);
     __decorate([
-        (0, typeorm_1.ManyToOne)(function () { return post_1.Post; }, function (post) { return post.photo; }),
+        (0, typeorm_1.ManyToOne)(function () { return post_1.Post; }, function (post) { return post.photo; }, {
+            onDelete: "CASCADE"
+        }),
         __metadata("design:type", post_1.Post)
     ], photos.prototype, "post", void 0);
     __decorate([

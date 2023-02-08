@@ -7,7 +7,10 @@ export class photos{
     @PrimaryGeneratedColumn()
         id: number
 
-    @ManyToOne(() => Post, (post) => post.photo)
+    @ManyToOne(() => Post, (post) => post.photo, {
+        onDelete: "CASCADE"
+
+    })
         post: Post
 
     @Column("varchar", {length: 255})

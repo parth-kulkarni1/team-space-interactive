@@ -60,6 +60,12 @@ export function postReducer(state: CurrentState, action: CurrentAction): Current
 
             return{...state, edit: {...state.edit, imageHandling: {...state.edit.imageHandling, deletedImages: [...state.edit.imageHandling.deletedImages, action.payload as string]}}}
 
+        case 'deletePost': 
+            
+        const deleted_post = action.payload as postStructure
+    
+            return {...state, post: [...state.post.filter(post => post !== deleted_post)]} // This removes the post from local state
+
 
 
         default :

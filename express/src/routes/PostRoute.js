@@ -219,4 +219,33 @@ post_router.put('/post/update', (0, express_validator_1.body)('post.title').exis
         });
     });
 });
+post_router.delete('/post/delete/:id', (0, express_validator_1.param)('id').exists(), function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var errors, post, err_4;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    errors = (0, express_validator_1.validationResult)(req);
+                    console.log(errors);
+                    if (!errors.isEmpty()) {
+                        return [2 /*return*/, res.send({ errors: errors.array() })];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).delete(req.params.id)]; // This will cascade into deleting all images as well..
+                case 2:
+                    post = _a.sent() // This will cascade into deleting all images as well..
+                    ;
+                    res.sendStatus(200); // Post Successfully has been deleted
+                    return [3 /*break*/, 4];
+                case 3:
+                    err_4 = _a.sent();
+                    next(err_4);
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+});
 var rootRouter = (0, express_1.Router)();

@@ -40,7 +40,7 @@ var Post = /** @class */ (function () {
     ], Post.prototype, "user", void 0);
     __decorate([
         (0, typeorm_1.OneToMany)(function () { return photos_1.photos; }, function (photo) { return photo.post; }, {
-            eager: true
+            eager: true,
         }),
         __metadata("design:type", photos_1.photos)
     ], Post.prototype, "photo", void 0);

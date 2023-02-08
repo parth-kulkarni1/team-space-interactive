@@ -5,14 +5,16 @@ import { CurrentState } from '../Contexts/PostContext'
 import { postStructure } from "../Contexts/PostContext"
 import { getAllPosts } from '../AxiosCommands/Post/AxiosPostCommands'
 import { UserContext } from '../Contexts/UserContext'
-
-
 import { cld } from '../utils/Cloudinary'
+import { deletePost } from '../AxiosCommands/Post/AxiosPostCommands'
+import PostModal from '../Home/PostModal'
+import Reply from '../Reply/Reply'
+
 import { AdvancedImage, lazyload } from '@cloudinary/react'
 import moment from 'moment'
 import ReactMarkDown from 'react-markdown'
 import { Button } from 'react-bootstrap'
-import PostModal from '../Home/PostModal'
+import { toast } from 'react-toastify'
 
 
 export default function PostList(){
@@ -88,6 +90,22 @@ function Posts({post}: CurrentState){
         dispatch({type: true, payload: true})
 
     }
+
+    async function handlePostDelete(event: React.FormEvent<HTMLButtonElement>){
+
+        const post_to_remove = state.post[parseInt(event.currentTarget.id)] // Access the post.. 
+
+        await toast.promise(deletePost(post_to_remove.post_id), {
+            pending: "Your post is being deleted..", 
+            success: "Your post has been deleted",
+            error: "Something has gone wrong..."
+        })
+
+        dispatch({type: 'deletePost', payload: post_to_remove})
+
+
+
+    }
     
     return (
 
@@ -114,7 +132,7 @@ function Posts({post}: CurrentState){
 
                         </div>
 
-                                                
+                 
                         <div className='d-flex flex-column p-3'>
 
                             <div className='d-flex'>
@@ -144,9 +162,15 @@ function Posts({post}: CurrentState){
 
                             <div className='edit-button'>
 
-                                <Button id = {String(index)} disabled = {element.user?.email !== user?.email} onClick = {handleClick}>Edit Post</Button>
+                                {user?.email === element.user?.email &&
 
-                            </div>
+                                    <div className='d-flex edit-delete-post-buttons'>
+                                        <Button id = {String(index)} disabled = {element.user?.email !== user?.email} onClick = {handleClick}>Edit Post</Button>
+                                        <Button id = {String(index)} disabled = {element.user?.email !== user?.email} onClick = {handlePostDelete}>Delete Post</Button>
+                                    </div>          
+                                }
+                            
+                                </div>
 
                         </div>
 
@@ -179,12 +203,12 @@ function Posts({post}: CurrentState){
                     </div>
 
 
-                    <Button>Add a Reply</Button>
-
-
-
-
                 </div>
+
+        
+
+                <Reply></Reply>
+
 
             
                 

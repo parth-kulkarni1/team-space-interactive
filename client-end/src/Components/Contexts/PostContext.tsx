@@ -74,7 +74,7 @@ export interface CurrentState{
     
 
 export type CurrentAction = {
-    type: 'allPosts' | 'add' | true | false | 'title' |'errors' | 'resetPost' | 'body' | 'image' | 'upload' | 'edit'| 'cloudinaryimage'|'reset'| 'localPost' | 'addDeleted' | 'updateEdited'
+    type: 'allPosts' | 'add' | true | false | 'title' |'errors' | 'resetPost' | 'body' | 'image' | 'upload' | 'edit'| 'cloudinaryimage'|'reset'| 'localPost' | 'addDeleted' | 'updateEdited' | 'deletePost'
     payload: string | boolean | postStructure[] | getAllPostsResponse | postUser| Errors | imageType | string[] |
     {status: boolean, post: postStructure} | imageType[] | PostResponse[] | {post_id: number} }
 

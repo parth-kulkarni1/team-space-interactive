@@ -27,7 +27,7 @@ export class Post{
 
 
     @OneToMany(() => photos, (photo) => photo.post, {
-        eager: true
+        eager: true,
     })
         photo: photos    
     

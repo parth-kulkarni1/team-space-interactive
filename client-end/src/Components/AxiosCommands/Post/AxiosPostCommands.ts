@@ -41,3 +41,10 @@ export async function updatePost(post: any){
 
     return data
 }
+
+export async function deletePost(id: number){
+    const {data} = await axios.delete(`/post/delete/${id}`)
+
+    return data
+
+}
