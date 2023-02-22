@@ -42,6 +42,8 @@ var app_data_source_1 = require("../app-data-source");
 var post_1 = require("../entity/Posts/post");
 var express_validator_1 = require("express-validator");
 var photos_1 = require("../entity/Image/photos");
+var reply_1 = require("../entity/Reply/reply");
+var user_1 = require("../entity/User/user");
 require("dotenv").config();
 var cloudinary = require("cloudinary").v2;
 var post_router = (0, express_1.Router)();
@@ -94,12 +96,28 @@ post_router.post('/post/create', (0, express_validator_1.body)('title').exists({
                 case 7:
                     i++;
                     return [3 /*break*/, 3];
-                case 8: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
-                        post_id: saved_post.post_id
+                case 8: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find({
+                        relations: ['user', 'reply', 'reply.user', 'reply.photo', 'photo'],
+                        select: {
+                            reply: {
+                                body: true,
+                                createdAt: true,
+                                updatedAt: true,
+                                id: true,
+                                user: {
+                                    firstName: true,
+                                    lastName: true,
+                                    cover_background: true,
+                                    profile_background: true,
+                                    email: true,
+                                    id: true
+                                }
+                            }
+                        }, where: { post_id: saved_post.post_id }
                     })];
                 case 9:
                     results = _a.sent();
-                    res.json(results);
+                    res.json(results[0]);
                     return [3 /*break*/, 11];
                 case 10:
                     err_1 = _a.sent();
@@ -118,10 +136,38 @@ post_router.get('/posts', function (req, res, next) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find()]; // Finds all entites with eager loading... inlcudes post, user and photo object
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find({
+                            relations: ['user', 'reply', 'reply.user', 'reply.photo', 'reply.childComments', 'reply.childComments.user', 'reply.childComments.parentComment',
+                                'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo', 'photo'],
+                            select: {
+                                reply: {
+                                    body: true,
+                                    createdAt: true,
+                                    updatedAt: true,
+                                    id: true,
+                                    user: {
+                                        firstName: true,
+                                        lastName: true,
+                                        cover_background: true,
+                                        profile_background: true,
+                                        email: true,
+                                        id: true
+                                    },
+                                    parentComment: {
+                                        body: true,
+                                        createdAt: true,
+                                        updatedAt: true
+                                    }
+                                }
+                            }, order: {
+                                post_id: "DESC",
+                                reply: {
+                                    id: "DESC"
+                                }
+                            }
+                        })];
                 case 1:
-                    results = _a.sent() // Finds all entites with eager loading... inlcudes post, user and photo object
-                    ;
+                    results = _a.sent();
                     res.json(results);
                     return [3 /*break*/, 3];
                 case 2:
@@ -242,6 +288,180 @@ post_router.delete('/post/delete/:id', (0, express_validator_1.param)('id').exis
                 case 3:
                     err_4 = _a.sent();
                     next(err_4);
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+});
+post_router.post('/post/reply/create', (0, express_validator_1.body)("body").exists({ checkFalsy: true, checkNull: true }).notEmpty(), (0, express_validator_1.body)("postId").exists().notEmpty(), function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var user, reply, savedReply, uploadedResponse, reply_image, updatedReply, err_5;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 9, , 10]);
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).findOneBy({
+                            id: req.body.user
+                        })];
+                case 1:
+                    user = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reply_1.Reply).create({
+                            body: req.body.reply,
+                            postId: req.body.post,
+                            user: user
+                        })];
+                case 2:
+                    reply = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reply_1.Reply).save(reply)]; // Save the reply instance
+                case 3:
+                    savedReply = _a.sent() // Save the reply instance
+                    ;
+                    if (!(req.body.image.length > 0)) return [3 /*break*/, 7];
+                    return [4 /*yield*/, cloudinary.uploader.upload(req.body.image, {
+                            width: 150,
+                            height: 150,
+                            crop: "fit",
+                            quality: "auto",
+                            fetch_format: "auto"
+                        })];
+                case 4:
+                    uploadedResponse = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).create({
+                            photo_id: uploadedResponse.public_id,
+                            reply: savedReply,
+                        })];
+                case 5:
+                    reply_image = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).save(reply_image)];
+                case 6:
+                    _a.sent();
+                    _a.label = 7;
+                case 7: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reply_1.Reply).find({
+                        relations: {
+                            photo: true,
+                            user: true,
+                            childComments: true
+                        },
+                        select: {
+                            user: {
+                                firstName: true,
+                                lastName: true,
+                                profile_background: true,
+                                cover_background: true,
+                                email: true,
+                                id: true
+                            },
+                            photo: {
+                                photo_id: true
+                            }
+                        }, where: {
+                            id: savedReply.id
+                        }
+                    })];
+                case 8:
+                    updatedReply = _a.sent();
+                    res.json(updatedReply[0]);
+                    return [3 /*break*/, 10];
+                case 9:
+                    err_5 = _a.sent();
+                    next(err_5);
+                    return [3 /*break*/, 10];
+                case 10: return [2 /*return*/];
+            }
+        });
+    });
+});
+post_router.post('/post/reply/reply', function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var user, reply, saved_reply, uploadedResponse, reply_image, updatedReply;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(user_1.User).findOneBy({
+                        id: req.body.user
+                    })];
+                case 1:
+                    user = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reply_1.Reply).create({
+                            body: req.body.reply,
+                            parentComment: req.body.reply_id,
+                            user: user
+                        })];
+                case 2:
+                    reply = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reply_1.Reply).save(reply)];
+                case 3:
+                    saved_reply = _a.sent();
+                    if (!(req.body.image.length > 0)) return [3 /*break*/, 7];
+                    return [4 /*yield*/, cloudinary.uploader.upload(req.body.image, {
+                            width: 150,
+                            height: 150,
+                            crop: "fit",
+                            quality: "auto",
+                            fetch_format: "auto"
+                        })];
+                case 4:
+                    uploadedResponse = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).create({
+                            photo_id: uploadedResponse.public_id,
+                            reply: saved_reply,
+                        })];
+                case 5:
+                    reply_image = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(photos_1.photos).save(reply_image)];
+                case 6:
+                    _a.sent();
+                    _a.label = 7;
+                case 7: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reply_1.Reply).find({
+                        relations: ['user', 'photo', 'childComments', 'parentComment', 'parentComment.parentComment'],
+                        select: {
+                            user: {
+                                firstName: true,
+                                lastName: true,
+                                profile_background: true,
+                                cover_background: true,
+                                email: true,
+                                id: true
+                            },
+                            photo: {
+                                photo_id: true
+                            }
+                        }, where: {
+                            id: saved_reply.id,
+                        }
+                    })];
+                case 8:
+                    updatedReply = _a.sent();
+                    if (updatedReply[0].parentComment.parentComment) { // This ensures that if the comment contains two parents so (original reply -> reply -> reply, its disbaled and cant be replied furhter)
+                        updatedReply.forEach(function (e) { delete e.childComments; });
+                    }
+                    res.json(updatedReply[0]);
+                    return [2 /*return*/];
+            }
+        });
+    });
+});
+post_router.delete('/post/reply/delete/:id', function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var reply, err_6;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reply_1.Reply).findOneBy({
+                            id: parseInt(req.params.id)
+                        })];
+                case 1:
+                    reply = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reply_1.Reply).remove(reply)]; // Removes the reply entity cascadely... 
+                case 2:
+                    _a.sent(); // Removes the reply entity cascadely... 
+                    res.sendStatus(200);
+                    return [3 /*break*/, 4];
+                case 3:
+                    err_6 = _a.sent();
+                    next(err_6);
+                    res.sendStatus(500);
                     return [3 /*break*/, 4];
                 case 4: return [2 /*return*/];
             }

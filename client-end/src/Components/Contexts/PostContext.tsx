@@ -3,17 +3,19 @@ import { postReducer } from "../Reducers/PostContextReducer";
 import { getAllPostsResponse } from "../AxiosCommands/Post/AxiosPostTypes";
 import { PostResponse } from "../AxiosCommands/Post/AxiosPostTypes";
 
+
 export type postUser  = {
     title: string, body: string, userId: number, images: string[]
 
 }
 
-export type Errors = {
-    title: string, 
-    body: string
+export type imageType = {
+    id: string
+    photo_id: string
 }
 
-export type imageType = {
+export type imageReplyType = {
+    id: number, 
     photo_id: string
 }
 
@@ -24,6 +26,8 @@ export type postStructure = {
     createdAt: string,
     user?: post_obj_user, 
     photo?: imageType[],
+    reply: reply[]
+    
 }
 
 export type postStructureEdit = {
@@ -43,29 +47,94 @@ export type post_obj_user = {
     email: string,
 }
 
-const initalState: CurrentState = {    
-    post: [],
-    ownPost: {title: '', body: '', userId: 0, images: []},
-    show: false,
-    errors: {title: '', body: ''},
-    edit: {status: false, post: { title: '', 
-        body: '', 
-        post_id: 0,
-        createdAt: '',
-        photo: [], 
-        }, imageHandling: {deletedImages: [], localImages: []}}
+export type post_user_reply = {
+    firstName: string,
+    lastName: string, 
+    profile_background: string, 
+    email: string,
+    cover_background: string, 
+    id: number
+}
+
+export type reply = {
+    body: string, 
+    createdAt: string, 
+    id: number, 
+    photo: imageReplyType[], 
+    updatedAt: string,
+    user: post_user_reply, 
+    childComments: reply[]
+    parentComment: parentComment
+}
+
+type parentComment = {
+    id: number,
+    body: string, 
+    createdAt: string, 
+    updatedAt: string, 
+}
+
+export type replyOptional = {
+    body?: string, 
+    createdAt?: string, 
+    id?: number, 
+    photo?: imageReplyType[], 
+    updatedAt?: string,
+    user?: post_user_reply, 
+    childComments?: reply[],
+    parentComment?: parentComment
+}
+
+export type PostEdit = {
+    status: boolean, 
+    post: postStructureEdit, 
+    imageHandling: {deletedImages: string[], localImages: string[]}
+
+}
+
+// defining constants for inital state 
+
+export const editReset = 
+    {status: false, post: { title: '', 
+    body: '', 
+    post_id: 0,
+    createdAt: '',
+    photo: [], 
+    }, imageHandling: {deletedImages: [], localImages: []}}
+
+export const ownPostReset = 
+    {title: '', body: '', userId: 0, images: []}
+
+export const currentPostReset = 
+    { title: '', 
+    body: '', 
+    post_id: 0,
+    createdAt: '',
+    reply: []}
     
 
-  }
+const initalState: CurrentState = {    
+    post: [],
+    ownPost: ownPostReset,
+    show: false,
+    edit: editReset,
+    reply: false, 
+    currentPost: currentPostReset, 
+    currentReplyOwner: null,
+    editReply: ''
+}
 
 
 export interface CurrentState{
     post: postStructure[]
     ownPost: postUser,
     show: boolean
-    errors: {title: string, body: string}
-    edit: {status: boolean, post: postStructureEdit, imageHandling: {deletedImages: string[], localImages: string[]}},
-
+    edit: PostEdit,
+    reply: boolean, 
+    currentPost: postStructure,
+    currentReplyOwner: replyOptional | null,
+    editReply: string
+   
 
 }
 
@@ -74,10 +143,13 @@ export interface CurrentState{
     
 
 export type CurrentAction = {
-    type: 'allPosts' | 'add' | true | false | 'title' |'errors' | 'resetPost' | 'body' | 'image' | 'upload' | 'edit'| 'cloudinaryimage'|'reset'| 'localPost' | 'addDeleted' | 'updateEdited' | 'deletePost'
-    payload: string | boolean | postStructure[] | getAllPostsResponse | postUser| Errors | imageType | string[] |
-    {status: boolean, post: postStructure} | imageType[] | PostResponse[] | {post_id: number} }
+    type: 'allPosts' | true | false | 'title' | 'resetPost' | 'body' | 
+           'image'  | 'edit'| 'cloudinaryimage'|'reset'| 'localPost' | 'addDeleted' | 'updateEdited' | 'deletePost' | 'viewReplies' | 'currentPost' |'addReply'
+           | 'replyOwner' | 'addChildReply' |'addParentReply' |'deleteReplyParent' | 'deleteReplyChild'| 'editReply'
+    payload: string | boolean | string[] | postStructure[] | getAllPostsResponse 
+            | postUser | imageType | postStructureEdit | imageType[] | PostResponse | postStructure| PostEdit | reply | number | reply[] | null
 
+}
 
 
 

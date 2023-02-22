@@ -1,0 +1,14 @@
+
+
+.parent-comment{
+    margin-left: 25px;
+}
+
+.text-area-reply{
+    margin-left: 25px;
+    resize: none;
+}
+
+.comment-text-area{
+    resize: none;
+}

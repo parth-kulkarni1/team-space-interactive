@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 var typeorm_1 = require("typeorm");
 var post_1 = require("../Posts/post");
+var reply_1 = require("../Reply/reply");
 var User = /** @class */ (function () {
     function User() {
     }
@@ -49,6 +50,10 @@ var User = /** @class */ (function () {
         (0, typeorm_1.OneToMany)(function () { return post_1.Post; }, function (post) { return post.post_id; }),
         __metadata("design:type", Array)
     ], User.prototype, "posts", void 0);
+    __decorate([
+        (0, typeorm_1.OneToMany)(function () { return reply_1.Reply; }, function (reply) { return reply.id; }),
+        __metadata("design:type", reply_1.Reply)
+    ], User.prototype, "reply", void 0);
     User = __decorate([
         (0, typeorm_1.Entity)()
     ], User);

@@ -1,10 +1,10 @@
-import axios from "axios";
-import { postStructure } from "../../Contexts/PostContext";
-import { getAllPostsResponse, PostInfo, PostResponse, ImageInfo } from "./AxiosPostTypes";
+import axios, { HttpStatusCode } from "axios";
+import { reply } from "../../Contexts/PostContext";
+import { getAllPostsResponse, PostInfo, PostResponse, ImageInfo, ReplyResponse, ReplyToReplyInput, PostReplyInput } from "./AxiosPostTypes";
 
 
 export async function createPost(post_info: PostInfo){
-    const {data} = await axios.post<PostResponse[]>('/post/create', post_info)
+    const {data} = await axios.post<PostResponse>('/post/create', post_info)
 
     console.log(data)
 
@@ -47,4 +47,30 @@ export async function deletePost(id: number){
 
     return data
 
+}
+
+export async function createReply(reply: PostReplyInput){
+
+    const {data} = await axios.post<reply>('/post/reply/create', reply)
+
+    console.log(data)
+
+    return data
+}
+
+export async function createReplyToReply(reply: ReplyToReplyInput){
+
+    const {data} = await axios.post<reply>('/post/reply/reply', reply)
+
+    console.log(data)
+
+    return data
+}
+
+export async function deleteReply(id:number){
+    const {data} = await axios.delete<HttpStatusCode>(`/post/reply/delete/${id}`)
+
+    console.log(data)
+    
+    return data
 }

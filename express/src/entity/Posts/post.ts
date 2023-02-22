@@ -1,5 +1,6 @@
 import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn, BeforeUpdate } from "typeorm";
 import { photos } from "../Image/photos";
+import { Reply } from "../Reply/reply";
 import { User } from "../User/user";
 
 @Entity({
@@ -21,15 +22,16 @@ export class Post{
     createdAt: Date;
 
     @ManyToOne(() => User, {
-        eager: true
+        onDelete: "CASCADE"
     })
     user: User
 
 
-    @OneToMany(() => photos, (photo) => photo.post, {
-        eager: true,
-    })
+    @OneToMany(() => photos, (photo) => photo.post)
         photo: photos    
+
+    @OneToMany(() => Reply, (reply) => reply.postId)
+        reply: Reply
     
 
 

@@ -1,7 +1,7 @@
 import React, {useState, useContext} from "react"
 import './Reply.css'
 import { PostContext } from "../Contexts/PostContext"
-import { createReply } from "../AxiosCommands/Post/AxiosPostCommands"
+import {createReplyToReply } from "../AxiosCommands/Post/AxiosPostCommands"
 import { UserContext } from "../Contexts/UserContext"
 
 
@@ -12,7 +12,7 @@ import { Tooltip } from "@mui/material"
 import { Button } from "react-bootstrap"
 import { toast } from "react-toastify"
 
-function Reply(){
+function CommentReply(){
 
     const {state, dispatch} = useContext(PostContext)
 
@@ -22,31 +22,51 @@ function Reply(){
 
     const [hover, setHover] = useState<boolean>(false)
 
-    const [reply, setReply] = useState<string>(state.editReply)
+    const [reply, setReply] = useState<string>(state.currentReplyOwner?.body!)
 
  
 
     async function handleSubmitReply(event: React.FormEvent<HTMLButtonElement>){
 
-            const replyObj = {reply: reply, post: state.currentPost.post_id, image: image, user: user?.id as number}
+        console.log(reply)
 
-            await toast.promise(createReply(replyObj), {
+        const replyObj = {reply: reply, reply_id: state.currentReplyOwner?.id as number, image: image, user: user?.id as number}
 
-                pending: "Your reply is uploading...",
-                success: "Reply has been created",
-                error: "Something has gone wrong.."
+        const result = await toast.promise(createReplyToReply(replyObj), {
+
+            pending: "Your replying is uploading...", 
+            success: "Your reply has been uploaded",
+            error: "Something has gone wrong.."
+
+        })
 
 
-            }).then(result => dispatch({type: 'addReply', payload: result})).catch(err => console.log(err))
+        if(state.currentReplyOwner?.parentComment){ // This means that we are replying to a post that is not a parent, and is a children
 
-            setReply('')
+            dispatch({type: "addChildReply", payload: result})
 
-            setHover(false)
+        }
 
-            setImage('')
+        else{ // This means that we are replying to a post that is a parent
 
-    
+            dispatch({type: 'addParentReply', payload: result})
+
+
+        }
+
+        
+        setReply('')
+
+        setHover(false)
+
+        setImage('')
+
+        dispatch({type: 'replyOwner', payload: null})
+
+
     }
+
+      
 
     function handleImageReply(event: React.ChangeEvent<HTMLInputElement>){
 
@@ -68,16 +88,21 @@ function Reply(){
 
     }
 
-
     return(
-        <div className="d-flex flex-column text-area-container">
+        <div className="d-flex flex-column text-area-container p-2">
+            
+            {!!state.currentReplyOwner && 
 
-            <div className = "text-area">
-                <textarea className="form-control" 
-                          placeholder= {"Write a reply to " + state.currentPost.user?.firstName + " " + 
-                                        state.currentPost.user?.lastName + "'s Post"}
+             <>
+
+            <div className = "text-area-reply">
+                <textarea className="form-control form-control-sm comment-text-area" 
+                          placeholder= {"Write your reply to " + state.currentReplyOwner?.user?.firstName 
+                                        + " " + state.currentReplyOwner?.user?.lastName}
                           value={reply}
                           onChange={(e) => setReply(e.target.value)}
+                          autoFocus
+                          
                                                     
                           ></textarea> 
 
@@ -154,15 +179,21 @@ function Reply(){
 
                     }
 
+
+
+
+               
+
             </div>
+
+            </>
+
+            }
 
 
 
         </div>
-   
-    
     )
-
 
 
 
@@ -170,4 +201,4 @@ function Reply(){
 
 }
 
-export default Reply
+export default CommentReply

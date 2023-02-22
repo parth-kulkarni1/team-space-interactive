@@ -1,4 +1,4 @@
-import { post_obj_user } from "../../Contexts/PostContext"
+import { imageReplyType, post_obj_user } from "../../Contexts/PostContext"
 import { imageType } from "../../Contexts/PostContext"
 
 export type PostInfo = {
@@ -17,6 +17,20 @@ export type Post = {
 
 }
 
+export type PostReplyInput = {
+    reply: string, 
+    post: number, 
+    image: string, 
+    user: number
+}
+
+export type ReplyToReplyInput = {
+    reply: string, 
+    reply_id: number, 
+    image: string, 
+    user: number
+}
+
 export type PostResponse = {
     title: string,
     body: string,
@@ -32,4 +46,12 @@ export type getAllPostsResponse = {
 
 export type ImageInfo = {
     image: string[]
+}
+
+export type ReplyResponse = {
+    body: string, 
+    createdAt: string, 
+    id: number, 
+    photo: imageReplyType[], 
+    updatedAt: string
 }

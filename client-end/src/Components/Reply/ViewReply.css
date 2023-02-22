@@ -1,0 +1,21 @@
+.user-information-reply{
+    border-radius: 10px;
+     background-color: #d3d3d3;
+
+}
+
+.options{
+    width: 100%;
+}
+
+.reply{
+    gap: 30px;
+}
+
+.photo-info{
+    gap: 10px
+}
+
+.reply-owner-information{
+    gap: 10px
+}

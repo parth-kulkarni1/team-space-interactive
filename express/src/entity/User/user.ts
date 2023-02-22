@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, OneToMany } from "typeorm"
 import { Post } from "../Posts/post"
+import { Reply } from "../Reply/reply"
 
 @Entity()
 export class User {
@@ -26,4 +27,7 @@ export class User {
 
     @OneToMany(() => Post, (post) => post.post_id)
     posts: Post[]
+
+    @OneToMany(() => Reply, (reply) => reply.id)
+    reply: Reply
 }

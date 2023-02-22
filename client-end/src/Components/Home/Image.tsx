@@ -1,4 +1,4 @@
-import React, {useRef, useContext} from 'react'
+import React, {useRef, useContext, useState} from 'react'
 import './Image.css'
 import { imageType, PostContext } from '../Contexts/PostContext'
 
@@ -36,7 +36,7 @@ export function Image(){
             return
         }
 
-        if(state.edit.post.photo.length + state.ownPost.images.length === 4){
+        if(state.edit.post.photo?.length + state.ownPost.images.length === 4){
             window.alert("You can only include 4 photos per post..")
             if(ref.current){
                 ref.current.value = '';

@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react'
 import { createPost, updatePost } from '../AxiosCommands/Post/AxiosPostCommands'
 import { postValidation } from '../utils/Validation'
-import { PostContext } from '../Contexts/PostContext'
+import { editReset, ownPostReset, PostContext} from '../Contexts/PostContext'
 import { UserContext } from '../Contexts/UserContext'
 import { Image } from './Image'
 
@@ -9,6 +9,9 @@ import { Button, Modal, Form } from 'react-bootstrap'
 import MDEditor from '@uiw/react-md-editor'
 import { toast } from 'react-toastify'
 
+type Errors = {
+    title: string, body: string, validationSuccess: boolean
+}
 
 function PostModal(){
 
@@ -19,6 +22,9 @@ function PostModal(){
 
     const [isSubmitting, setSumbitting] = useState<boolean>(false)
 
+    const [errors, setErrors] = useState<Errors | null>({title: '', body: '', validationSuccess: false})
+
+
 
     function handleClose(){
         
@@ -26,20 +32,19 @@ function PostModal(){
         but closes the modaal window, 
         so if they reopen it their old inputs are not displayed and cleared accordingly.. */
 
-            dispatch({type: "resetPost", payload: ""})
-
-            dispatch({type:"errors", payload: {title: "", body: ""}})
-
             dispatch({type:false, payload: false})
-
-            dispatch({type: 'title', payload: ''})
 
             dispatch({type: 'image', payload: []})
 
-            dispatch({type: 'reset', payload: {status: false, post: {title: '', createdAt: '', body: '', post_id: 0}}})
+            dispatch({type: 'resetPost', payload: ownPostReset})
+
+            dispatch({type: 'reset', payload: editReset})
+
+
+            setErrors(null)
                     
             
-        setSumbitting(false)
+            setSumbitting(false)
 
 
     }
@@ -47,10 +52,16 @@ function PostModal(){
 
     async function handleSumbit(event: React.FormEvent<HTMLFormElement>){
         event.preventDefault();
+
+
+
+        state.ownPost.userId = user.user?.id as number
+
+
         const error = postValidation(state.ownPost)
 
         if (!error.validationSuccess){
-            dispatch({type: "errors", payload: error})
+            setErrors(error)
 
             return
         }
@@ -73,7 +84,8 @@ function PostModal(){
                 error: "Something has gone wrong..."
 
 
-            }).then(results => dispatch({type: 'localPost', payload: results[0] })).catch(err => console.log(err))
+            }).then(results => dispatch({type: 'localPost', payload: results})).catch(err => console.log(err))
+
 
         }
 
@@ -84,6 +96,7 @@ function PostModal(){
             state.edit.post.title = state.ownPost.title
 
             state.edit.imageHandling.localImages = state.ownPost.images
+
 
             const result = await toast.promise(updatePost(state.edit), {
                 pending: "Your edited post is uploading...",
@@ -103,9 +116,13 @@ function PostModal(){
     }
 
 
+
     return(
+
+
         
         <div className='d-flex modal-launch'>
+
 
         <Modal show = {state.show} centered = {true} onHide = {handleClose}>
 
@@ -119,25 +136,29 @@ function PostModal(){
 
                     <Form.Control type = "input" 
                                 placeholder='Write a title for your post...'
-                                onChange = {(event) => dispatch({type: 'title', payload: event.target.value})}
-                                isInvalid = {!!state.errors.title}
-                                defaultValue = {state.edit.status ? state.edit.post.title : ""}
+                                value = {state.ownPost.title}
+                                onChange={(e) => {dispatch({type: 'title', payload: e.target.value})}}
+                                isInvalid = {!!errors?.title}
                                 ></Form.Control>
 
-                    <Form.Control.Feedback type = "invalid">{state.errors.title}</Form.Control.Feedback>
+                    <Form.Control.Feedback type = "invalid">{errors?.title}</Form.Control.Feedback>
 
                 <br></br>
 
-                <MDEditor value={state.ownPost.body} 
-                        onChange = {(value) =>dispatch({type:'body', payload: value as string})}
-                        preview = "edit"
-                        ></MDEditor>
+                <MDEditor value={state.ownPost.body}
+                         onChange= {(value) => {dispatch({type: 'body', payload: value as string })}}
+                         preview = "edit"
 
-                {state.errors.body &&
+                >
+
+                </MDEditor>
+
+
+                {errors?.body &&
                 
                 <div>
                     <br></br>
-                    <p className='text-danger'> {state.errors.body}</p>
+                    <p className='text-danger'> {errors.body}</p>
                 </div>
 
                 
@@ -169,7 +190,7 @@ function PostModal(){
     </div>
 
     )
-} 
+}
 
 
 export default PostModal

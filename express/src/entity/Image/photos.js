@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.photos = void 0;
 var typeorm_1 = require("typeorm");
 var post_1 = require("../Posts/post");
+var reply_1 = require("../Reply/reply");
 var photos = /** @class */ (function () {
     function photos() {
     }
@@ -25,6 +26,12 @@ var photos = /** @class */ (function () {
         }),
         __metadata("design:type", post_1.Post)
     ], photos.prototype, "post", void 0);
+    __decorate([
+        (0, typeorm_1.ManyToOne)(function () { return reply_1.Reply; }, function (reply) { return reply.photo; }, {
+            onDelete: "CASCADE"
+        }),
+        __metadata("design:type", reply_1.Reply)
+    ], photos.prototype, "reply", void 0);
     __decorate([
         (0, typeorm_1.Column)("varchar", { length: 255 }),
         __metadata("design:type", String)

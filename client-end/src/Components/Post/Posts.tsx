@@ -1,20 +1,21 @@
 
-import React, {useContext, useEffect} from 'react'
+import React, {useContext, useEffect ,useMemo} from 'react'
 import { PostContext } from '../Contexts/PostContext'
-import { CurrentState } from '../Contexts/PostContext'
 import { postStructure } from "../Contexts/PostContext"
 import { getAllPosts } from '../AxiosCommands/Post/AxiosPostCommands'
 import { UserContext } from '../Contexts/UserContext'
 import { cld } from '../utils/Cloudinary'
 import { deletePost } from '../AxiosCommands/Post/AxiosPostCommands'
 import PostModal from '../Home/PostModal'
-import Reply from '../Reply/Reply'
+
 
 import { AdvancedImage, lazyload } from '@cloudinary/react'
 import moment from 'moment'
 import ReactMarkDown from 'react-markdown'
 import { Button } from 'react-bootstrap'
 import { toast } from 'react-toastify'
+import ViewReplies from '../Reply/ViewReply'
+
 
 
 export default function PostList(){
@@ -38,62 +39,57 @@ export default function PostList(){
     return(
 
      
-        <Posts post={state.post} ownPost={state.ownPost} show={false} errors={{
-            title: '',
-            body: ''
-        }} edit={{
-            status: false,
-            post: {
-                title: '',
-                body: '',
-                post_id: 0,
-                createdAt: '',
-                photo: [],
-            }, 
-            imageHandling: {
-                deletedImages: [],
-                localImages: []
-            }
-        }}/>
+        <Posts post={state.post}/>
 
     )
 
 
 }
 
+type post = {
+    post: postStructure[]
+}
 
-function Posts({post}: CurrentState){
+
+function Posts({post}: post){
 
     const {user} = useContext(UserContext)
 
     const {state, dispatch} = useContext(PostContext)
 
-    function getTimeFromUTC(utc_string: string): Array<string>{
-
-        const half  = utc_string.split('T')
-        const time = half[1].split('.')
-
-
-
-        return time
-
-    }
 
     function handleClick(event: React.FormEvent<HTMLButtonElement>){
 
-        dispatch({type: 'edit', payload: state.post[parseInt(event.currentTarget.id)]})
+        const post_index = parseInt(event.currentTarget.dataset.postId!)
 
-        dispatch({type: 'body', payload:state.post[parseInt(event.currentTarget.id)].body})
+        dispatch({type: 'edit', payload: state.post[post_index]})
 
-        dispatch({type:'title', payload: state.post[parseInt(event.currentTarget.id)].title})
+        dispatch({type: 'body', payload:state.post[post_index].body})
+
+        dispatch({type:'title', payload: state.post[post_index].title})
         
         dispatch({type: true, payload: true})
 
     }
 
+    function handleViewComments(event: React.FormEvent<HTMLButtonElement>){
+
+
+        const post = state.post[parseInt(event.currentTarget.dataset.postId!)] // Access the post element
+
+        dispatch({type: 'viewReplies', payload: true})
+        
+
+        dispatch({type: 'currentPost', payload: post})
+        
+
+    }
+
     async function handlePostDelete(event: React.FormEvent<HTMLButtonElement>){
 
-        const post_to_remove = state.post[parseInt(event.currentTarget.id)] // Access the post.. 
+        console.log(event.currentTarget.dataset.postId)
+
+        const post_to_remove = state.post[parseInt(event.currentTarget.dataset.postId!)] // Access the post.. 
 
         await toast.promise(deletePost(post_to_remove.post_id), {
             pending: "Your post is being deleted..", 
@@ -106,6 +102,9 @@ function Posts({post}: CurrentState){
 
 
     }
+
+    return useMemo(() => {
+
     
     return (
 
@@ -126,7 +125,7 @@ function Posts({post}: CurrentState){
 
                         <div className='d-flex align-items-center'>
 
-                            <AdvancedImage cldImg={cld.image(element.user?.profile_background)} className = 'user-profile-pic-post-style' 
+                            <AdvancedImage key={element.user?.email} cldImg={cld.image(element.user?.profile_background)} className = 'user-profile-pic-post-style' 
                                             plugins={[lazyload({rootMargin: '0px',
                                             threshold: 0.25})]} />
 
@@ -145,9 +144,7 @@ function Posts({post}: CurrentState){
 
                                 <p className='text-muted'><b>{element.user?.firstName}, {element.user?.lastName}</b></p> 
 
-                                <p className='text-muted'>{moment(element.createdAt).utc().format('YYYY-MM-DD')}</p>
-
-                                <p className='text-muted'>{getTimeFromUTC(element.createdAt)[0]}</p>
+                                <p className='text-muted'>{moment(element.createdAt).local().format('YYYY-MM-DD HH:mm:ss')}</p>
 
                             </div>
 
@@ -165,8 +162,8 @@ function Posts({post}: CurrentState){
                                 {user?.email === element.user?.email &&
 
                                     <div className='d-flex edit-delete-post-buttons'>
-                                        <Button id = {String(index)} disabled = {element.user?.email !== user?.email} onClick = {handleClick}>Edit Post</Button>
-                                        <Button id = {String(index)} disabled = {element.user?.email !== user?.email} onClick = {handlePostDelete}>Delete Post</Button>
+                                        <Button data-post-id = {index} disabled = {element.user?.email !== user?.email} onClick = {handleClick}>Edit Post</Button>
+                                        <Button data-post-id = {index} disabled = {element.user?.email !== user?.email} onClick = {handlePostDelete}>Delete Post</Button>
                                     </div>          
                                 }
                             
@@ -195,23 +192,28 @@ function Posts({post}: CurrentState){
 
                         {element.photo?.map((pic) => 
 
-                        <AdvancedImage cldImg={cld.image(pic.photo_id)}  plugins={[lazyload({rootMargin: '0px',
+                        <AdvancedImage key={pic.photo_id} cldImg={cld.image(pic.photo_id)}  plugins={[lazyload({rootMargin: '0px',
                         threshold: 0.25})]}/>
                         
                         )}
 
                     </div>
 
+                </div>
+
+
+                <div className='d-flex justify-content-between p-2'>
+                    
+                    <Button variant="link" className="text-muted" data-post-id = {index} onClick = {handleViewComments} >View all commments ({element.reply.length})</Button>
+
+                    <Button>Like Post</Button>
 
                 </div>
 
+
+
+
         
-
-                <Reply></Reply>
-
-
-            
-                
             </div>
 
             
@@ -223,14 +225,24 @@ function Posts({post}: CurrentState){
                                 <PostModal /> 
                             }
 
+                        
+            {state.reply && 
+                    
+                    <ViewReplies /> 
+                            
+                        } 
+
+         
+                
+
         </div>
 
 
     )
 
+    }, [state.post, state.edit, state.currentPost, state.reply])
 
-
-
+  
 
 
 }

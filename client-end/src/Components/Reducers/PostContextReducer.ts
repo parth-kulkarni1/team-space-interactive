@@ -1,17 +1,12 @@
 import { act } from "@testing-library/react"
-import { PostResponse } from "../AxiosCommands/Post/AxiosPostTypes"
-import { imageType, postStructure, postStructureEdit } from "../Contexts/PostContext"
-import { CurrentAction, CurrentState, postUser, Errors} from "../Contexts/PostContext"
+import { imageType, PostEdit, postStructure, postStructureEdit, postUser, reply } from "../Contexts/PostContext"
+import { CurrentAction, CurrentState} from "../Contexts/PostContext"
 
 export function postReducer(state: CurrentState, action: CurrentAction): CurrentState{
     switch(action.type){
         case 'allPosts':{
             return {...state, post: action.payload as postStructure[]}
         }
-
-        case 'add':
-            return {...state, ownPost: action.payload as postUser }
-
 
         case 'body':
             return {...state, ownPost: {...state.ownPost, body: action.payload as string}}
@@ -25,11 +20,12 @@ export function postReducer(state: CurrentState, action: CurrentAction): Current
         case 'title':
             return {...state, ownPost: {...state.ownPost, title: action.payload as string}}
 
-        case 'errors':
-            return {...state, errors: action.payload as Errors}
-
         case 'resetPost':
-            return {...state, ownPost: {...state.ownPost, title: action.payload as string, body: action.payload as string}}
+
+             const reset_own_post = action.payload as postUser
+
+            return {...state, ownPost: {...state.ownPost, title: reset_own_post.title, body: reset_own_post.body, images: reset_own_post.images
+                                        , userId: reset_own_post.userId}}
 
         case 'image':
             return {...state, ownPost: {...state.ownPost, images: action.payload as string[]}}
@@ -39,12 +35,16 @@ export function postReducer(state: CurrentState, action: CurrentAction): Current
             return {...state, edit: {...state.edit, post : {...state.edit.post, photo: action.payload as imageType[]}}}
 
         case 'edit':
+
             return {...state, edit : {...state.edit, status: true, post: action.payload as postStructureEdit}
 
         }
 
         case 'reset':
-            return {...state, edit: {...state.edit, status: false, post: action.payload as postStructureEdit}}
+
+            const reset_edit_post = action.payload as PostEdit
+
+            return {...state, edit: {...state.edit, status: reset_edit_post.status, post: reset_edit_post.post, imageHandling: reset_edit_post.imageHandling}}
 
 
         case 'localPost': 
@@ -66,8 +66,77 @@ export function postReducer(state: CurrentState, action: CurrentAction): Current
     
             return {...state, post: [...state.post.filter(post => post !== deleted_post)]} // This removes the post from local state
 
+        case 'viewReplies' : 
 
 
+            return {...state, reply: action.payload as boolean}
+
+        
+        case 'currentPost' : 
+            return {...state, currentPost: action.payload as postStructure}
+
+        
+        case 'addReply':
+
+          return {...state, currentPost: {...state.currentPost, reply: [ action.payload as reply, ...state.currentPost.reply]
+                    
+          }}
+
+        
+        case 'replyOwner':
+            return {...state, currentReplyOwner: action.payload as reply}
+
+        case 'addChildReply': 
+
+        const replyObj = action.payload as reply
+
+
+            return{...state, currentPost: {...state.currentPost, reply: state.currentPost.reply.map((element) => ({
+            
+                       ...element,
+                        childComments: element.childComments.map((comment) => replyObj.parentComment.id === comment.id ?
+                            {...comment, childComments: [...comment.childComments, action.payload as reply]} : comment
+                        
+                            
+                        
+            )}))}}
+
+        case 'addParentReply': 
+
+            const replyObjParent = action.payload as reply
+
+            return {...state, currentPost: {...state.currentPost, reply: state.currentPost.reply.map((element) => element.id === replyObjParent.parentComment.id ? {...element, childComments: [...element.childComments, replyObjParent as reply] } : element) 
+
+
+
+            }}
+
+        case 'deleteReplyParent':
+
+            const deletedReplyObj = action.payload as reply
+
+            return {...state, currentPost: {...state.currentPost, reply: [...state.currentPost.reply.filter(reply => reply.id !== deletedReplyObj.id)]}}
+
+        case 'deleteReplyChild': 
+
+            const deletedReplyObjChild = action.payload as reply
+
+            return{...state, currentPost: {...state.currentPost, reply: state.currentPost.reply.map((element) => ({
+                    
+                    ...element,
+                    childComments: element.childComments.filter(reply => reply.id !== deletedReplyObjChild.id).map((next) => ({
+                        ...next,
+                        childComments: next.childComments.filter(reply => reply.id !== deletedReplyObjChild.id)
+                    }))
+
+                
+            }))}}
+
+        
+        case 'editReply':
+            return {...state, editReply: action.payload as string}
+                
+    
         default :
         return state
     }
