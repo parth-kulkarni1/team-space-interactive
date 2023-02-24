@@ -13,6 +13,7 @@ exports.Reply = void 0;
 var typeorm_1 = require("typeorm");
 var photos_1 = require("../Image/photos");
 var post_1 = require("../Posts/post");
+var reaction_1 = require("../Reactions/reaction");
 var user_1 = require("../User/user");
 var Reply = /** @class */ (function () {
     function Reply() {
@@ -61,6 +62,10 @@ var Reply = /** @class */ (function () {
         (0, typeorm_1.OneToMany)(function () { return Reply_1; }, function (replya) { return replya.parentComment; }, {}),
         __metadata("design:type", Array)
     ], Reply.prototype, "childComments", void 0);
+    __decorate([
+        (0, typeorm_1.OneToMany)(function () { return reaction_1.Reactions; }, function (reaction) { return reaction.id; }),
+        __metadata("design:type", reaction_1.Reactions)
+    ], Reply.prototype, "reaction", void 0);
     Reply = Reply_1 = __decorate([
         (0, typeorm_1.Entity)({
             orderBy: {

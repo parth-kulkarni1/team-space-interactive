@@ -1,5 +1,5 @@
 import { act } from "@testing-library/react"
-import { imageType, PostEdit, postStructure, postStructureEdit, postUser, reply } from "../Contexts/PostContext"
+import { imageType, PostEdit, postStructure, postStructureEdit, postUser, reaction, reply } from "../Contexts/PostContext"
 import { CurrentAction, CurrentState} from "../Contexts/PostContext"
 
 export function postReducer(state: CurrentState, action: CurrentAction): CurrentState{
@@ -135,6 +135,73 @@ export function postReducer(state: CurrentState, action: CurrentAction): Current
         
         case 'editReply':
             return {...state, editReply: action.payload as string}
+
+
+        case 'incrementLike':
+            const likePost = action.payload as postStructure
+            return {...state, post: [...state.post.map((element) => element.post_id === likePost.post_id ? {
+                ...element, 
+                likeCount: element.likeCount + 1
+            }
+
+            :
+
+            element    )
+        ]}
+
+
+        case 'addLikeReaction': 
+            const likePostReactionObj = action.payload as reaction
+
+            return{...state, post: [...state.post.map((element) => element.post_id === likePostReactionObj.post.post_id ? 
+                {
+                ...element,reaction: [...element.reaction, likePostReactionObj]} 
+                :
+                element )
+            ]}
+
+        case 'addHeartReaction': 
+            const heartPostReactionObj = action.payload as reaction
+
+            return{...state, post: [...state.post.map((element) => element.post_id === heartPostReactionObj.post.post_id ? 
+                {
+                ...element,reaction: [...element.reaction, heartPostReactionObj]} 
+                :
+                element )
+            ]}
+
+
+
+        case 'incrementHeart':
+
+            const heartPost = action.payload as postStructure
+                return {...state, post: [...state.post.map((element) => element.post_id === heartPost.post_id ? {
+                    ...element, 
+                    heartsCount: element.heartsCount + 1
+                }
+
+                :
+
+                element    )
+            ]}
+
+        case 'decrementLike': 
+
+            const likePostRemoved = action.payload as postStructure
+            return {...state, post: [...state.post.map((element) => element.post_id === likePostRemoved.post_id ? {
+                ...element, 
+                likeCount: element.likeCount > 0 ? element.likeCount - 1 : 0,
+                ...element.reaction.filter(reaction => reaction.post.post_id !== likePostRemoved.post_id)
+            }
+
+            :
+
+            element    )
+        ]}
+            
+
+
+
                 
     
         default :

@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { photos } from "../Image/photos";
 import { Post } from "../Posts/post";
+import { Reactions } from "../Reactions/reaction";
 import { User } from "../User/user";
 
 @Entity({
@@ -43,6 +44,11 @@ export class Reply{
     @OneToMany(() => Reply, (replya) => replya.parentComment, {
     })
         childComments: Reply[]
+
+
+    @OneToMany(() => Reactions, (reaction) => reaction.id)
+         reaction: Reactions
+    
 
     
     

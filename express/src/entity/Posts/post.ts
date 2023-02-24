@@ -1,5 +1,6 @@
 import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn, BeforeUpdate } from "typeorm";
 import { photos } from "../Image/photos";
+import { Reactions } from "../Reactions/reaction";
 import { Reply } from "../Reply/reply";
 import { User } from "../User/user";
 
@@ -21,6 +22,12 @@ export class Post{
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;
 
+    @Column()
+        likeCount: number
+    
+    @Column()
+        heartsCount: number
+
     @ManyToOne(() => User, {
         onDelete: "CASCADE"
     })
@@ -32,6 +39,10 @@ export class Post{
 
     @OneToMany(() => Reply, (reply) => reply.postId)
         reply: Reply
+
+    @OneToMany(() => Reactions, (reaction) => reaction.post)
+         reaction: Reactions
+   
     
 
 

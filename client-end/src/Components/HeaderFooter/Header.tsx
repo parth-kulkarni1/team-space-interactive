@@ -81,12 +81,7 @@ function Header(){
                     <Nav.Link onClick = {handleLogout}>Log Out</Nav.Link>
                 </LinkContainer>
 
-                <LinkContainer to = "/Login">
-                    <Nav.Link disabled className="text-muted">Welcome - {user.user.firstName}</Nav.Link>
-                </LinkContainer>
-
-
-            
+                <Nav.Link>Add Tasks</Nav.Link>
 
 
 

@@ -5,6 +5,7 @@ import { body, param, validationResult} from 'express-validator';
 import { photos } from "../entity/Image/photos";
 import { Reply } from "../entity/Reply/reply";
 import { User } from "../entity/User/user";
+import { Reactions } from "../entity/Reactions/reaction";
 require("dotenv").config();
 
 
@@ -100,7 +101,8 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
 
         const results = await myDataSource.getRepository(Post).find({
             relations: ['user', 'reply', 'reply.user', 'reply.photo', 'reply.childComments', 'reply.childComments.user', 'reply.childComments.parentComment',
-                        'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo', 'photo'], 
+                        'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo','photo'
+                        ,'reaction', 'reaction.user', 'reaction.post'],
             select: {
                 reply: {
                     body: true, 
@@ -113,12 +115,16 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
                         cover_background: true, 
                         profile_background: true, 
                         email: true,
-                        id: true
+                        id: true,
                     }, 
                     parentComment: {
                         body: true, 
                         createdAt: true, 
                         updatedAt: true
+                    }, 
+                    reaction: {
+                        likes: true, 
+                        hearts: true,
                     }
                     
                 }
@@ -131,6 +137,10 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
             }
 
         })
+
+        const found = await myDataSource.getRepository(Post).createQueryBuilder("post").leftJoinAndSelect("post.reaction", "reactions").addSelect("SUM(reactions.likes)", "likes").addSelect("SUM(reactions.hearts)", "hearts").groupBy("post.post_id").orderBy("likes", "DESC").getRawMany()
+        
+    
 
 
 
@@ -212,13 +222,48 @@ async function(req: Request, res: Response, next: NextFunction){
         }
 
 
+        const results = await myDataSource.getRepository(Post).find({
+            relations: ['user', 'reply', 'reply.user', 'reply.photo', 'reply.childComments', 'reply.childComments.user', 'reply.childComments.parentComment',
+                        'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo', 'photo'
+                      ], 
+            select: {
+                reply: {
+                    body: true, 
+                    createdAt: true, 
+                    updatedAt: true,
+                    id: true,
+                    user: {
+                        firstName: true, 
+                        lastName: true, 
+                        cover_background: true, 
+                        profile_background: true, 
+                        email: true,
+                        id: true
+                    }, 
+                    parentComment: {
+                        body: true, 
+                        createdAt: true, 
+                        updatedAt: true
+                    }
+                    
+                }
+                
+            } ,order: {
+                post_id: "DESC",
+                reply: {
+                    id: "DESC"
+                }
+            },
+            where: {
+                post_id: req.body.post.post_id
+            }
 
-        const apost = await myDataSource.getRepository(Post).findOneBy({
-            post_id: req.body.post.post_id
         })
+
+        
         
 
-        res.json(apost)
+        res.json(results[0])
 
         
 
@@ -425,17 +470,138 @@ post_router.post('/post/reply/create', body("body").exists({checkFalsy: true, ch
         res.sendStatus(500)
     }
 
-    
-
-
-
-
-
-
-
 
 
  })
+
+
+post_router.post('/post/reaction/like', async function(req: Request, res: Response, next: NextFunction){
+
+    const reaction = await myDataSource.getRepository(Reactions).create({
+        post: req.body.post,
+        user: req.body.user,
+        likes: 1
+    })
+
+    const saved = await myDataSource.getRepository(Reactions).save(reaction)
+
+    const post = await myDataSource.getRepository(Post).findOneBy({
+        post_id: req.body.post
+    })
+
+    await myDataSource.getRepository(Post).update(post.post_id, {likeCount: post.likeCount + 1})
+
+    // Replace this with the query that finds using raw many and update the value accordignly
+
+     const updated_reaction = await myDataSource.getRepository(Reactions).find({
+        relations:{
+            post: true, 
+            user: true, 
+        }, select: {
+            user: {
+                firstName: true, 
+                lastName: true, 
+                cover_background: true, 
+                profile_background: true, 
+                email: true,
+                id: true
+            }, 
+
+            post: {
+                post_id: true
+            }
+        } ,where: {
+            id: saved.id
+        }
+     })
+
+    res.json(updated_reaction[0])
+
+})
+
+post_router.post('/post/reaction/heart', async function(req: Request, res: Response, next: NextFunction){
+
+    const reaction = await myDataSource.getRepository(Reactions).create({
+        post: req.body.post,
+        user: req.body.user,
+        hearts: 1
+    })
+
+    const saved = await myDataSource.getRepository(Reactions).save(reaction)
+
+    const post = await myDataSource.getRepository(Post).findOneBy({
+        post_id: req.body.post
+    })
+
+    await myDataSource.getRepository(Post).update(post.post_id, {heartsCount: post.heartsCount + 1})
+
+    // Replace this with the query that finds using raw many and update the value accordignly
+
+    const updated_reaction = await myDataSource.getRepository(Reactions).find({
+        relations:{
+            post: true, 
+            user: true, 
+        }, select: {
+            user: {
+                firstName: true, 
+                lastName: true, 
+                cover_background: true, 
+                profile_background: true, 
+                email: true,
+                id: true
+            }, 
+
+            post: {
+                post_id: true
+            }
+        } ,where: {
+            id: saved.id
+        }
+     })
+
+    res.json(updated_reaction[0])
+
+})
+
+post_router.delete('/post/reaction/like/remove', async function (req: Request, res: Response, next: NextFunction){
+    
+    const reaction = await myDataSource.getRepository(Reactions).findOneBy({
+        id: req.body.reaction  
+    
+    })
+
+    await myDataSource.getRepository(Reactions).remove(reaction) // The reaction is completly remove
+
+    const post = await myDataSource.getRepository(Post).findOneBy({
+        post_id: req.body.post
+    })
+
+    await myDataSource.getRepository(Post).update(post.post_id, {likeCount: post.likeCount - 1}) // The overall like count is decremented
+
+    res.json("success")
+
+
+})
+
+post_router.delete('/post/reaction/hearts/remove', async function (req: Request, res: Response, next: NextFunction){
+    
+    const reaction = await myDataSource.getRepository(Reactions).findOneBy({
+        user: req.body.user  
+    
+    })
+
+    await myDataSource.getRepository(Reactions).remove(reaction) // The reaction is completly remove
+
+    const post = await myDataSource.getRepository(Post).findOneBy({
+        post_id: req.body.post
+    })
+
+    await myDataSource.getRepository(Post).update(post.post_id, {heartsCount: post.heartsCount - 1}) // The overall like count is decremented
+
+
+})
+
+
 
 
 const rootRouter = Router();

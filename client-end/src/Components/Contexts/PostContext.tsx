@@ -26,8 +26,20 @@ export type postStructure = {
     createdAt: string,
     user?: post_obj_user, 
     photo?: imageType[],
-    reply: reply[]
+    reply: reply[],
+    reaction: reaction[],
+    likeCount: number, 
+    heartsCount: number
+
     
+}
+
+export type reaction = {
+    id: number, 
+    likes: number, 
+    hearts: number, 
+    user: post_obj_user,
+    post: {post_id: number}
 }
 
 export type postStructureEdit = {
@@ -36,11 +48,12 @@ export type postStructureEdit = {
     post_id: number,
     createdAt: string,
     photo: imageType[],
-
+  
 
 }
 
 export type post_obj_user = {
+    id: number,
     firstName: string, 
     lastName: string, 
     profile_background: string, 
@@ -99,7 +112,7 @@ export const editReset =
     body: '', 
     post_id: 0,
     createdAt: '',
-    photo: [], 
+    photo: [],
     }, imageHandling: {deletedImages: [], localImages: []}}
 
 export const ownPostReset = 
@@ -110,7 +123,11 @@ export const currentPostReset =
     body: '', 
     post_id: 0,
     createdAt: '',
-    reply: []}
+    reply: [],
+    reaction : [],
+    likeCount: 0, 
+    heartsCount: 0
+}
     
 
 const initalState: CurrentState = {    
@@ -145,9 +162,10 @@ export interface CurrentState{
 export type CurrentAction = {
     type: 'allPosts' | true | false | 'title' | 'resetPost' | 'body' | 
            'image'  | 'edit'| 'cloudinaryimage'|'reset'| 'localPost' | 'addDeleted' | 'updateEdited' | 'deletePost' | 'viewReplies' | 'currentPost' |'addReply'
-           | 'replyOwner' | 'addChildReply' |'addParentReply' |'deleteReplyParent' | 'deleteReplyChild'| 'editReply'
+           | 'replyOwner' | 'addChildReply' |'addParentReply' |'deleteReplyParent' | 'deleteReplyChild'| 'editReply' |'incrementLike' | 'incrementHeart'| 'decrementLike' |'addLikeReaction'
+           | 'addHeartReaction'
     payload: string | boolean | string[] | postStructure[] | getAllPostsResponse 
-            | postUser | imageType | postStructureEdit | imageType[] | PostResponse | postStructure| PostEdit | reply | number | reply[] | null
+            | postUser | imageType | postStructureEdit | imageType[] | PostResponse | postStructure| PostEdit | reply | number | reply[] | null | reaction
 
 }
 

@@ -1,5 +1,5 @@
 import axios, { HttpStatusCode } from "axios";
-import { reply } from "../../Contexts/PostContext";
+import { reaction, reply } from "../../Contexts/PostContext";
 import { getAllPostsResponse, PostInfo, PostResponse, ImageInfo, ReplyResponse, ReplyToReplyInput, PostReplyInput } from "./AxiosPostTypes";
 
 
@@ -74,3 +74,34 @@ export async function deleteReply(id:number){
     
     return data
 }
+
+export async function likePost(like: any){
+    const {data} = await axios.post<reaction>('/post/reaction/like',  like)
+
+    console.log(data)
+
+    return data
+
+}
+
+export async function likeHeart(heart: any){
+    const {data} = await axios.post<reaction>('/post/reaction/heart',  heart)
+
+    console.log(data)
+
+    return data
+
+
+}
+
+export async function deleteLike(like: any){
+    const {data} = await axios.delete('/post/reaction/like/remove', like)
+
+    console.log(data)
+
+    return data
+
+
+}
+
+

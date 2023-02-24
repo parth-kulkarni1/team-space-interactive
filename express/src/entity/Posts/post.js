@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Post = void 0;
 var typeorm_1 = require("typeorm");
 var photos_1 = require("../Image/photos");
+var reaction_1 = require("../Reactions/reaction");
 var reply_1 = require("../Reply/reply");
 var user_1 = require("../User/user");
 var Post = /** @class */ (function () {
@@ -34,6 +35,14 @@ var Post = /** @class */ (function () {
         __metadata("design:type", Date)
     ], Post.prototype, "createdAt", void 0);
     __decorate([
+        (0, typeorm_1.Column)(),
+        __metadata("design:type", Number)
+    ], Post.prototype, "likeCount", void 0);
+    __decorate([
+        (0, typeorm_1.Column)(),
+        __metadata("design:type", Number)
+    ], Post.prototype, "heartsCount", void 0);
+    __decorate([
         (0, typeorm_1.ManyToOne)(function () { return user_1.User; }, {
             onDelete: "CASCADE"
         }),
@@ -47,6 +56,10 @@ var Post = /** @class */ (function () {
         (0, typeorm_1.OneToMany)(function () { return reply_1.Reply; }, function (reply) { return reply.postId; }),
         __metadata("design:type", reply_1.Reply)
     ], Post.prototype, "reply", void 0);
+    __decorate([
+        (0, typeorm_1.OneToMany)(function () { return reaction_1.Reactions; }, function (reaction) { return reaction.post; }),
+        __metadata("design:type", reaction_1.Reactions)
+    ], Post.prototype, "reaction", void 0);
     Post = __decorate([
         (0, typeorm_1.Entity)({
             orderBy: {

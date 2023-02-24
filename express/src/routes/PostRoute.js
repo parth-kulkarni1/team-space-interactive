@@ -44,6 +44,7 @@ var express_validator_1 = require("express-validator");
 var photos_1 = require("../entity/Image/photos");
 var reply_1 = require("../entity/Reply/reply");
 var user_1 = require("../entity/User/user");
+var reaction_1 = require("../entity/Reactions/reaction");
 require("dotenv").config();
 var cloudinary = require("cloudinary").v2;
 var post_router = (0, express_1.Router)();
@@ -131,14 +132,15 @@ post_router.post('/post/create', (0, express_validator_1.body)('title').exists({
 });
 post_router.get('/posts', function (req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var results, err_2;
+        var results, found, err_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
+                    _a.trys.push([0, 3, , 4]);
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find({
                             relations: ['user', 'reply', 'reply.user', 'reply.photo', 'reply.childComments', 'reply.childComments.user', 'reply.childComments.parentComment',
-                                'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo', 'photo'],
+                                'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo', 'photo',
+                                'reaction', 'reaction.user', 'reaction.post'],
                             select: {
                                 reply: {
                                     body: true,
@@ -151,12 +153,16 @@ post_router.get('/posts', function (req, res, next) {
                                         cover_background: true,
                                         profile_background: true,
                                         email: true,
-                                        id: true
+                                        id: true,
                                     },
                                     parentComment: {
                                         body: true,
                                         createdAt: true,
                                         updatedAt: true
+                                    },
+                                    reaction: {
+                                        likes: true,
+                                        hearts: true,
                                     }
                                 }
                             }, order: {
@@ -168,20 +174,23 @@ post_router.get('/posts', function (req, res, next) {
                         })];
                 case 1:
                     results = _a.sent();
-                    res.json(results);
-                    return [3 /*break*/, 3];
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).createQueryBuilder("post").leftJoinAndSelect("post.reaction", "reactions").addSelect("SUM(reactions.likes)", "likes").addSelect("SUM(reactions.hearts)", "hearts").groupBy("post.post_id").orderBy("likes", "DESC").getRawMany()];
                 case 2:
+                    found = _a.sent();
+                    res.json(results);
+                    return [3 /*break*/, 4];
+                case 3:
                     err_2 = _a.sent();
                     next(err_2);
-                    return [3 /*break*/, 3];
-                case 3: return [2 /*return*/];
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
             }
         });
     });
 });
 post_router.put('/post/update', (0, express_validator_1.body)('post.title').exists({ checkFalsy: true }), (0, express_validator_1.body)('post.body').exists({ checkFalsy: true }), function (req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var errors, post, obj, result, i, image, i, uploadedResponse, images, apost, err_3;
+        var errors, post, obj, result, i, image, i, uploadedResponse, images, results, err_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -249,12 +258,43 @@ post_router.put('/post/update', (0, express_validator_1.body)('post.title').exis
                 case 13:
                     i++;
                     return [3 /*break*/, 9];
-                case 14: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
-                        post_id: req.body.post.post_id
+                case 14: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find({
+                        relations: ['user', 'reply', 'reply.user', 'reply.photo', 'reply.childComments', 'reply.childComments.user', 'reply.childComments.parentComment',
+                            'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo', 'photo'
+                        ],
+                        select: {
+                            reply: {
+                                body: true,
+                                createdAt: true,
+                                updatedAt: true,
+                                id: true,
+                                user: {
+                                    firstName: true,
+                                    lastName: true,
+                                    cover_background: true,
+                                    profile_background: true,
+                                    email: true,
+                                    id: true
+                                },
+                                parentComment: {
+                                    body: true,
+                                    createdAt: true,
+                                    updatedAt: true
+                                }
+                            }
+                        }, order: {
+                            post_id: "DESC",
+                            reply: {
+                                id: "DESC"
+                            }
+                        },
+                        where: {
+                            post_id: req.body.post.post_id
+                        }
                     })];
                 case 15:
-                    apost = _a.sent();
-                    res.json(apost);
+                    results = _a.sent();
+                    res.json(results[0]);
                     return [3 /*break*/, 17];
                 case 16:
                     err_3 = _a.sent();
@@ -464,6 +504,165 @@ post_router.delete('/post/reply/delete/:id', function (req, res, next) {
                     res.sendStatus(500);
                     return [3 /*break*/, 4];
                 case 4: return [2 /*return*/];
+            }
+        });
+    });
+});
+post_router.post('/post/reaction/like', function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var reaction, saved, post, updated_reaction;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).create({
+                        post: req.body.post,
+                        user: req.body.user,
+                        likes: 1
+                    })];
+                case 1:
+                    reaction = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).save(reaction)];
+                case 2:
+                    saved = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
+                            post_id: req.body.post
+                        })];
+                case 3:
+                    post = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).update(post.post_id, { likeCount: post.likeCount + 1 })
+                        // Replace this with the query that finds using raw many and update the value accordignly
+                    ];
+                case 4:
+                    _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).find({
+                            relations: {
+                                post: true,
+                                user: true,
+                            }, select: {
+                                user: {
+                                    firstName: true,
+                                    lastName: true,
+                                    cover_background: true,
+                                    profile_background: true,
+                                    email: true,
+                                    id: true
+                                },
+                                post: {
+                                    post_id: true
+                                }
+                            }, where: {
+                                id: saved.id
+                            }
+                        })];
+                case 5:
+                    updated_reaction = _a.sent();
+                    res.json(updated_reaction[0]);
+                    return [2 /*return*/];
+            }
+        });
+    });
+});
+post_router.post('/post/reaction/heart', function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var reaction, saved, post, updated_reaction;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).create({
+                        post: req.body.post,
+                        user: req.body.user,
+                        hearts: 1
+                    })];
+                case 1:
+                    reaction = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).save(reaction)];
+                case 2:
+                    saved = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
+                            post_id: req.body.post
+                        })];
+                case 3:
+                    post = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).update(post.post_id, { heartsCount: post.heartsCount + 1 })
+                        // Replace this with the query that finds using raw many and update the value accordignly
+                    ];
+                case 4:
+                    _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).find({
+                            relations: {
+                                post: true,
+                                user: true,
+                            }, select: {
+                                user: {
+                                    firstName: true,
+                                    lastName: true,
+                                    cover_background: true,
+                                    profile_background: true,
+                                    email: true,
+                                    id: true
+                                },
+                                post: {
+                                    post_id: true
+                                }
+                            }, where: {
+                                id: saved.id
+                            }
+                        })];
+                case 5:
+                    updated_reaction = _a.sent();
+                    res.json(updated_reaction[0]);
+                    return [2 /*return*/];
+            }
+        });
+    });
+});
+post_router.delete('/post/reaction/like/remove', function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var reaction, post;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).findOneBy({
+                        id: req.body.reaction
+                    })];
+                case 1:
+                    reaction = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).remove(reaction)]; // The reaction is completly remove
+                case 2:
+                    _a.sent(); // The reaction is completly remove
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
+                            post_id: req.body.post
+                        })];
+                case 3:
+                    post = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).update(post.post_id, { likeCount: post.likeCount - 1 })]; // The overall like count is decremented
+                case 4:
+                    _a.sent(); // The overall like count is decremented
+                    res.json("success");
+                    return [2 /*return*/];
+            }
+        });
+    });
+});
+post_router.delete('/post/reaction/hearts/remove', function (req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var reaction, post;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).findOneBy({
+                        user: req.body.user
+                    })];
+                case 1:
+                    reaction = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).remove(reaction)]; // The reaction is completly remove
+                case 2:
+                    _a.sent(); // The reaction is completly remove
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).findOneBy({
+                            post_id: req.body.post
+                        })];
+                case 3:
+                    post = _a.sent();
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).update(post.post_id, { heartsCount: post.heartsCount - 1 })]; // The overall like count is decremented
+                case 4:
+                    _a.sent(); // The overall like count is decremented
+                    return [2 /*return*/];
             }
         });
     });

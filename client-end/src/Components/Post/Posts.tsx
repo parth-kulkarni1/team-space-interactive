@@ -1,12 +1,13 @@
 
-import React, {useContext, useEffect ,useMemo} from 'react'
-import { PostContext } from '../Contexts/PostContext'
+import React, {useContext, useEffect ,useMemo, useState} from 'react'
+import { PostContext, reaction } from '../Contexts/PostContext'
 import { postStructure } from "../Contexts/PostContext"
-import { getAllPosts } from '../AxiosCommands/Post/AxiosPostCommands'
+import { deleteLike, getAllPosts, likeHeart, likePost } from '../AxiosCommands/Post/AxiosPostCommands'
 import { UserContext } from '../Contexts/UserContext'
 import { cld } from '../utils/Cloudinary'
 import { deletePost } from '../AxiosCommands/Post/AxiosPostCommands'
 import PostModal from '../Home/PostModal'
+import ViewReplies from '../Reply/ViewReply'
 
 
 import { AdvancedImage, lazyload } from '@cloudinary/react'
@@ -14,7 +15,8 @@ import moment from 'moment'
 import ReactMarkDown from 'react-markdown'
 import { Button } from 'react-bootstrap'
 import { toast } from 'react-toastify'
-import ViewReplies from '../Reply/ViewReply'
+import { Delete, Edit, Favorite, QuestionAnswer, ThumbUp } from '@mui/icons-material'
+import { IconButton } from '@mui/material'
 
 
 
@@ -57,6 +59,10 @@ function Posts({post}: post){
 
     const {state, dispatch} = useContext(PostContext)
 
+    useEffect(() => {
+        console.log(state.post)
+    })
+
 
     function handleClick(event: React.FormEvent<HTMLButtonElement>){
 
@@ -98,6 +104,70 @@ function Posts({post}: post){
         })
 
         dispatch({type: 'deletePost', payload: post_to_remove})
+
+
+
+    }
+
+    async function handlePostLike(event: React.FormEvent<HTMLButtonElement>){
+        
+        // here need to check whether there is a heart to the post comitted by the user
+
+        const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
+
+        const obj = {user: user?.id, post: post.post_id}
+
+
+        const result = await likePost(obj)
+
+        dispatch({type: 'incrementLike', payload: post})
+        dispatch({type: 'addLikeReaction', payload: result})
+
+        console.log(state.post)
+
+    }
+
+    async function handlePostHeart(event: React.FormEvent<HTMLButtonElement>){
+
+        // here need to check whether there is a like to the post comitted by the user...
+
+        const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
+
+        const likedPost = post.reaction.find(reaction => reaction.likes > 0 && reaction.user.id === user?.id)
+
+        const obj = {user: user?.id, post: post.post_id, reaction: likedPost?.id}
+
+        console.log(likedPost, "liked post")
+
+
+        if(likedPost){ // The user has liked the post
+
+            await deleteLike(obj).then(result => dispatch({type: "decrementLike", payload: post}))
+
+        }
+
+        const result = await likeHeart(obj)
+
+        dispatch({type: 'incrementHeart', payload: post})
+
+        dispatch({type: 'addHeartReaction', payload: result})
+
+
+        console.log(result)
+
+       
+
+    }
+
+    function handlePostLikeRemove(event: React.FormEvent<HTMLButtonElement>){
+
+        
+        const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
+
+        
+
+        const obj = {user: user?.id, post: post.post_id}
+
 
 
 
@@ -162,8 +232,17 @@ function Posts({post}: post){
                                 {user?.email === element.user?.email &&
 
                                     <div className='d-flex edit-delete-post-buttons'>
-                                        <Button data-post-id = {index} disabled = {element.user?.email !== user?.email} onClick = {handleClick}>Edit Post</Button>
-                                        <Button data-post-id = {index} disabled = {element.user?.email !== user?.email} onClick = {handlePostDelete}>Delete Post</Button>
+
+                                        <IconButton color = 'success' data-post-id = {index} disabled = {element.user?.email !== user?.email} onClick = {handleClick}>
+                                            <Edit></Edit>
+                                            Edit Post
+                                        </IconButton>
+
+                                        <IconButton color='error'data-post-id = {index} disabled = {element.user?.email !== user?.email} onClick = {handlePostDelete}>
+                                            <Delete></Delete>
+                                            Delete Post
+                                        </IconButton>
+
                                     </div>          
                                 }
                             
@@ -202,11 +281,59 @@ function Posts({post}: post){
                 </div>
 
 
-                <div className='d-flex justify-content-between p-2'>
-                    
-                    <Button variant="link" className="text-muted" data-post-id = {index} onClick = {handleViewComments} >View all commments ({element.reply.length})</Button>
+                <div className='d-flex justify-content-evenly p-2'>
 
-                    <Button>Like Post</Button>
+
+                         
+                    
+                <IconButton data-post-id = {index} onClick = {handleViewComments}>
+                        <QuestionAnswer></QuestionAnswer>
+                         Comments({element.reply.length})
+                    </IconButton>
+
+                
+
+                    {element.reaction.find(reaction => reaction.likes > 0 && reaction.user.id === user?.id) && element.likeCount > 0 ?
+
+                    <IconButton color={'primary'} data-post-id = {index} onClick={handlePostLikeRemove}>
+                        <ThumbUp></ThumbUp>
+                        Like ({element.likeCount})
+                        </IconButton>
+
+                    :
+
+                    
+                    <IconButton data-post-id = {index} onClick={handlePostLike}>
+                        <ThumbUp></ThumbUp>
+                        Like ({element.likeCount})
+                        </IconButton>
+                        
+                    }
+
+
+                    {element.reaction.find(reaction => reaction.hearts > 0 && reaction.user.id === user?.id) && element.heartsCount > 0 ?
+
+                    
+                    <IconButton color='error' data-post-id = {index} onClick={handlePostLikeRemove}>
+                        <Favorite></Favorite>
+                        Heart ({element.heartsCount})
+                    </IconButton>
+
+                    :
+
+                    
+                  <IconButton  data-post-id = {index} onClick={handlePostHeart}>
+                  <Favorite></Favorite>
+                  Heart ({element.heartsCount})
+              </IconButton>
+
+
+                    
+                
+                    }
+
+                
+            
 
                 </div>
 
