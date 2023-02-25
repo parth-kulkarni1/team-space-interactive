@@ -22,12 +22,6 @@ export class Post{
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;
 
-    @Column()
-        likeCount: number
-    
-    @Column()
-        heartsCount: number
-
     @ManyToOne(() => User, {
         onDelete: "CASCADE"
     })
@@ -42,6 +36,7 @@ export class Post{
 
     @OneToMany(() => Reactions, (reaction) => reaction.post)
          reaction: Reactions
+    liker: any;
    
     
 

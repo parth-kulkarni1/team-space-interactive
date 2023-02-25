@@ -163,7 +163,7 @@ export type CurrentAction = {
     type: 'allPosts' | true | false | 'title' | 'resetPost' | 'body' | 
            'image'  | 'edit'| 'cloudinaryimage'|'reset'| 'localPost' | 'addDeleted' | 'updateEdited' | 'deletePost' | 'viewReplies' | 'currentPost' |'addReply'
            | 'replyOwner' | 'addChildReply' |'addParentReply' |'deleteReplyParent' | 'deleteReplyChild'| 'editReply' |'incrementLike' | 'incrementHeart'| 'decrementLike' |'addLikeReaction'
-           | 'addHeartReaction'
+           | 'addHeartReaction' | 'decrementHeart'
     payload: string | boolean | string[] | postStructure[] | getAllPostsResponse 
             | postUser | imageType | postStructureEdit | imageType[] | PostResponse | postStructure| PostEdit | reply | number | reply[] | null | reaction
 

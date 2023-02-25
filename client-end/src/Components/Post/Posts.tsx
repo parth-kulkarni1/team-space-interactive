@@ -2,7 +2,7 @@
 import React, {useContext, useEffect ,useMemo, useState} from 'react'
 import { PostContext, reaction } from '../Contexts/PostContext'
 import { postStructure } from "../Contexts/PostContext"
-import { deleteLike, getAllPosts, likeHeart, likePost } from '../AxiosCommands/Post/AxiosPostCommands'
+import { deleteHeart, deleteLike, getAllPosts, likeHeart, likePost } from '../AxiosCommands/Post/AxiosPostCommands'
 import { UserContext } from '../Contexts/UserContext'
 import { cld } from '../utils/Cloudinary'
 import { deletePost } from '../AxiosCommands/Post/AxiosPostCommands'
@@ -113,9 +113,22 @@ function Posts({post}: post){
         
         // here need to check whether there is a heart to the post comitted by the user
 
+        console.log("yeh triggered like")
+
         const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
 
-        const obj = {user: user?.id, post: post.post_id}
+        const heartPost = post.reaction.find(reaction => reaction.hearts > 0 && reaction.user.id === user?.id)
+
+        console.log(heartPost)
+
+
+        const obj = {user: user?.id, post: post.post_id, reaction: heartPost?.id}
+
+        if(heartPost){ // The user has liked the post
+
+            await deleteHeart(obj).then(result => dispatch({type: "decrementHeart", payload: post}))
+
+        }
 
 
         const result = await likePost(obj)
@@ -159,14 +172,38 @@ function Posts({post}: post){
 
     }
 
-    function handlePostLikeRemove(event: React.FormEvent<HTMLButtonElement>){
+    async function handlePostLikeRemove(event: React.FormEvent<HTMLButtonElement>){
 
         
         const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
 
+        const likedPost = post.reaction.find(reaction => reaction.likes > 0 && reaction.user.id === user?.id)
+
+        console.log(likedPost)
+
         
 
-        const obj = {user: user?.id, post: post.post_id}
+        const obj = {user: user?.id, post: post.post_id, reaction: likedPost?.id}
+
+        await deleteLike(obj).then(result => dispatch({type: "decrementLike", payload: likedPost!}))
+
+    }
+
+
+    
+    async function handlePostHeartRemove(event: React.FormEvent<HTMLButtonElement>){
+
+        
+        const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
+
+        const heartPost = post.reaction.find(reaction => reaction.hearts > 0 && reaction.user.id === user?.id)
+
+        
+
+        const obj = {user: user?.id, post: post.post_id, reaction: heartPost?.id}
+
+        await deleteHeart(obj).then(result => dispatch({type: "decrementHeart", payload: post}))
+
 
 
 
@@ -314,7 +351,7 @@ function Posts({post}: post){
                     {element.reaction.find(reaction => reaction.hearts > 0 && reaction.user.id === user?.id) && element.heartsCount > 0 ?
 
                     
-                    <IconButton color='error' data-post-id = {index} onClick={handlePostLikeRemove}>
+                    <IconButton color='error' data-post-id = {index} onClick={handlePostHeartRemove}>
                         <Favorite></Favorite>
                         Heart ({element.heartsCount})
                     </IconButton>

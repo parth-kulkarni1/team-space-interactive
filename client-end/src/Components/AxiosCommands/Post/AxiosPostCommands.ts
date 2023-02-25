@@ -105,3 +105,14 @@ export async function deleteLike(like: any){
 }
 
 
+export async function deleteHeart(heart: any){
+    const {data} = await axios.delete('/post/reaction/hearts/remove', heart)
+
+    console.log(data)
+
+    return data
+
+
+}
+
+

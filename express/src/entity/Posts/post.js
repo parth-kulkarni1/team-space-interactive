@@ -35,14 +35,6 @@ var Post = /** @class */ (function () {
         __metadata("design:type", Date)
     ], Post.prototype, "createdAt", void 0);
     __decorate([
-        (0, typeorm_1.Column)(),
-        __metadata("design:type", Number)
-    ], Post.prototype, "likeCount", void 0);
-    __decorate([
-        (0, typeorm_1.Column)(),
-        __metadata("design:type", Number)
-    ], Post.prototype, "heartsCount", void 0);
-    __decorate([
         (0, typeorm_1.ManyToOne)(function () { return user_1.User; }, {
             onDelete: "CASCADE"
         }),

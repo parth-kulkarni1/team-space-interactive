@@ -6,6 +6,8 @@ import { photos } from "../entity/Image/photos";
 import { Reply } from "../entity/Reply/reply";
 import { User } from "../entity/User/user";
 import { Reactions } from "../entity/Reactions/reaction";
+import { selectFields } from "express-validator/src/select-fields";
+import { getRepository } from "typeorm";
 require("dotenv").config();
 
 
@@ -59,30 +61,31 @@ post_router.post('/post/create', body('title').exists({checkFalsy: true}), body(
 
         }
 
-        const results = await myDataSource.getRepository(Post).find({
-            relations: ['user', 'reply', 'reply.user', 'reply.photo', 'photo'], 
-            select: {
-                reply: {
-                    body: true, 
-                    createdAt: true, 
-                    updatedAt: true,
-                    id: true,
-                    user: {
-                        firstName: true, 
-                        lastName: true, 
-                        cover_background: true, 
-                        profile_background: true, 
-                        email: true,
-                        id: true
-                    }
-                }
-            }, where:
-                {post_id: saved_post.post_id}
-                
-            })
+        const query = await myDataSource.getRepository(Post).createQueryBuilder("post").loadRelationCountAndMap("post.likeCount", "post.reaction.likes", "reaction", (qb) => qb.where('reaction.likes > 0'))
+                                                            .loadRelationCountAndMap("post.heartsCount", "post.reaction.hearts", "reaction", (qb) => qb.where('reaction.hearts > 0'))
+                                                            .leftJoin("post.user", "userpost")
+                                                            .addSelect(['userpost.firstName', 'userpost.lastName',
+                                                                        'userpost.cover_background', 
+                                                                        'userpost.profile_background', 
+                                                                        'userpost.email', 'userpost.id'])
+                                                            .leftJoinAndSelect('post.reply', 'reply')
+                                                            .leftJoin('reply.user', 'userreply').addSelect([
+                                                                'userreply.firstName', 'userreply.lastName',
+                                                                'userreply.cover_background', 
+                                                                'userreply.profile_background', 
+                                                                'userreply.email', 'userreply.id'
+                                                            ]).leftJoinAndSelect('reply.photo', "replyphoto")
+                                                            .leftJoinAndSelect("post.photo", "photo")
+                                                            .leftJoinAndSelect("post.reaction", "reactions")
+                                                            .leftJoinAndSelect("reactions.post", "postd")
+                                                            .leftJoin("reactions.user", "user").addSelect(
+                                                                ['user.firstName', 'user.lastName',
+                                                                'user.cover_background', 
+                                                                'user.profile_background', 
+                                                                'user.email', 'user.id']).where("post.post_id =:id", {id: saved_post.post_id})
+                                                                .getMany()
 
-
-        res.json(results[0])
+        res.json(query[0])
 
 
     } catch(err){
@@ -99,52 +102,19 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
 
     try{
 
-        const results = await myDataSource.getRepository(Post).find({
-            relations: ['user', 'reply', 'reply.user', 'reply.photo', 'reply.childComments', 'reply.childComments.user', 'reply.childComments.parentComment',
-                        'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo','photo'
-                        ,'reaction', 'reaction.user', 'reaction.post'],
-            select: {
-                reply: {
-                    body: true, 
-                    createdAt: true, 
-                    updatedAt: true,
-                    id: true,
-                    user: {
-                        firstName: true, 
-                        lastName: true, 
-                        cover_background: true, 
-                        profile_background: true, 
-                        email: true,
-                        id: true,
-                    }, 
-                    parentComment: {
-                        body: true, 
-                        createdAt: true, 
-                        updatedAt: true
-                    }, 
-                    reaction: {
-                        likes: true, 
-                        hearts: true,
-                    }
-                    
-                }
-                
-            } ,order: {
-                post_id: "DESC",
-                reply: {
-                    id: "DESC"
-                }
-            }
-
-        })
-
-        const found = await myDataSource.getRepository(Post).createQueryBuilder("post").leftJoinAndSelect("post.reaction", "reactions").addSelect("SUM(reactions.likes)", "likes").addSelect("SUM(reactions.hearts)", "hearts").groupBy("post.post_id").orderBy("likes", "DESC").getRawMany()
-        
-    
+        const found = await myDataSource.getRepository(Post).createQueryBuilder("post").loadRelationCountAndMap("post.likeCount", "post.reaction.likes", "reaction", (qb) => qb.where('reaction.likes > 0')).loadRelationCountAndMap("post.heartsCount", "post.reaction.hearts", "reaction", (qb) => qb.where('reaction.hearts > 0'))
+        .leftJoinAndSelect("post.reaction", "reactions").leftJoin("reactions.user", "userx").addSelect(['userx.id'])
+        .leftJoinAndSelect("reactions.post", "postx").leftJoinAndSelect("post.reply", "reply").leftJoinAndSelect("reply.photo", "photoreply")
+        .leftJoin("reply.user", "replyuser").addSelect(['replyuser.id', 'replyuser.cover_background', 'replyuser.profile_background', 'replyuser.firstName', 'replyuser.lastName'])
+        .leftJoinAndSelect("reply.childComments", "replyChild1")
+        .leftJoin("replyChild1.user", "userchild1").addSelect(['userchild1.id', 'userchild1.cover_background', 'userchild1.profile_background', 'userchild1.firstName', 'userchild1.lastName'])
+        .leftJoinAndSelect("replyChild1.parentComment", "replychildparentComment1").leftJoinAndSelect("replyChild1.photo", "replyChildCommentphoto")
+        .leftJoinAndSelect("replyChild1.childComments", "replyChild2").leftJoin("replyChild2.user", "replyChildComments2user").addSelect(['replyChildComments2user.id', 'replyChildComments2user.cover_background', 'replyChildComments2user.profile_background', 'replyChildComments2user.firstName', 'replyChildComments2user.lastName'])
+        .leftJoinAndSelect("replyChild2.photo", "replyChildComments2photo").leftJoinAndSelect("post.photo", "photo").leftJoin("post.user", "user").addSelect(['user.id', 'user.cover_background', 'user.profile_background', 'user.firstName', 'user.lastName'])
+        .getMany()
 
 
-
-        res.json(results)
+        res.json(found)
 
 
 
@@ -489,7 +459,6 @@ post_router.post('/post/reaction/like', async function(req: Request, res: Respon
         post_id: req.body.post
     })
 
-    await myDataSource.getRepository(Post).update(post.post_id, {likeCount: post.likeCount + 1})
 
     // Replace this with the query that finds using raw many and update the value accordignly
 
@@ -533,7 +502,6 @@ post_router.post('/post/reaction/heart', async function(req: Request, res: Respo
         post_id: req.body.post
     })
 
-    await myDataSource.getRepository(Post).update(post.post_id, {heartsCount: post.heartsCount + 1})
 
     // Replace this with the query that finds using raw many and update the value accordignly
 
@@ -572,11 +540,6 @@ post_router.delete('/post/reaction/like/remove', async function (req: Request, r
 
     await myDataSource.getRepository(Reactions).remove(reaction) // The reaction is completly remove
 
-    const post = await myDataSource.getRepository(Post).findOneBy({
-        post_id: req.body.post
-    })
-
-    await myDataSource.getRepository(Post).update(post.post_id, {likeCount: post.likeCount - 1}) // The overall like count is decremented
 
     res.json("success")
 
@@ -586,17 +549,17 @@ post_router.delete('/post/reaction/like/remove', async function (req: Request, r
 post_router.delete('/post/reaction/hearts/remove', async function (req: Request, res: Response, next: NextFunction){
     
     const reaction = await myDataSource.getRepository(Reactions).findOneBy({
-        user: req.body.user  
+        id: req.body.reaction  
     
     })
 
     await myDataSource.getRepository(Reactions).remove(reaction) // The reaction is completly remove
 
-    const post = await myDataSource.getRepository(Post).findOneBy({
-        post_id: req.body.post
-    })
+  
 
-    await myDataSource.getRepository(Post).update(post.post_id, {heartsCount: post.heartsCount - 1}) // The overall like count is decremented
+
+    res.json("success")
+
 
 
 })

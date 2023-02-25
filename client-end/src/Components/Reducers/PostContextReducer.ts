@@ -185,13 +185,27 @@ export function postReducer(state: CurrentState, action: CurrentAction): Current
                 element    )
             ]}
 
+
+        case 'decrementHeart':
+
+            const heartPostRemoved = action.payload as postStructure
+                return {...state, post: [...state.post.map((element) => element.post_id === heartPostRemoved.post_id ? {
+                    ...element, 
+                    heartsCount:  element.likeCount > 0 ? element.likeCount - 1 : 0,
+                }
+
+                :
+
+                element    )
+            ]}
+
         case 'decrementLike': 
 
-            const likePostRemoved = action.payload as postStructure
-            return {...state, post: [...state.post.map((element) => element.post_id === likePostRemoved.post_id ? {
+            const likePostRemoved = action.payload as reaction
+            return {...state, post: [...state.post.map((element) => element.post_id === likePostRemoved.post.post_id ? {
                 ...element, 
                 likeCount: element.likeCount > 0 ? element.likeCount - 1 : 0,
-                ...element.reaction.filter(reaction => reaction.post.post_id !== likePostRemoved.post_id)
+                reaction: element.reaction.filter(reaction => reaction.id !== likePostRemoved.id)
             }
 
             :
