@@ -94,8 +94,8 @@ export async function likeHeart(heart: any){
 
 }
 
-export async function deleteLike(like: any){
-    const {data} = await axios.delete('/post/reaction/like/remove', like)
+export async function deleteLike(likeId: number){
+    const {data} = await axios.delete(`/post/reaction/like/remove/${likeId}`)
 
     console.log(data)
 
@@ -105,8 +105,8 @@ export async function deleteLike(like: any){
 }
 
 
-export async function deleteHeart(heart: any){
-    const {data} = await axios.delete('/post/reaction/hearts/remove', heart)
+export async function deleteHeart(heartId: number){
+    const {data} = await axios.delete(`/post/reaction/hearts/remove/${heartId}`)
 
     console.log(data)
 

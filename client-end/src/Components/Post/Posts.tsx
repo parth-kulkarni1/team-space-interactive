@@ -8,6 +8,7 @@ import { cld } from '../utils/Cloudinary'
 import { deletePost } from '../AxiosCommands/Post/AxiosPostCommands'
 import PostModal from '../Home/PostModal'
 import ViewReplies from '../Reply/ViewReply'
+import ViewReactions from '../ViewReactions/ViewReactions'
 
 
 import { AdvancedImage, lazyload } from '@cloudinary/react'
@@ -15,7 +16,7 @@ import moment from 'moment'
 import ReactMarkDown from 'react-markdown'
 import { Button } from 'react-bootstrap'
 import { toast } from 'react-toastify'
-import { Delete, Edit, Favorite, QuestionAnswer, ThumbUp } from '@mui/icons-material'
+import { Delete, Edit, Favorite, QuestionAnswer, ThumbUp, Visibility } from '@mui/icons-material'
 import { IconButton } from '@mui/material'
 
 
@@ -59,10 +60,6 @@ function Posts({post}: post){
 
     const {state, dispatch} = useContext(PostContext)
 
-    useEffect(() => {
-        console.log(state.post)
-    })
-
 
     function handleClick(event: React.FormEvent<HTMLButtonElement>){
 
@@ -91,6 +88,21 @@ function Posts({post}: post){
 
     }
 
+    function handleViewReactions(event: React.FormEvent<HTMLButtonElement>){
+
+        const post = state.post[parseInt(event.currentTarget.dataset.postId!)] // Access the post element
+
+        console.log(post)
+
+        dispatch({type: 'currentPost', payload: post})
+
+        dispatch({type: 'viewReactions', payload: true})
+    
+    }
+
+
+
+
     async function handlePostDelete(event: React.FormEvent<HTMLButtonElement>){
 
         console.log(event.currentTarget.dataset.postId)
@@ -113,30 +125,23 @@ function Posts({post}: post){
         
         // here need to check whether there is a heart to the post comitted by the user
 
-        console.log("yeh triggered like")
-
         const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
 
         const heartPost = post.reaction.find(reaction => reaction.hearts > 0 && reaction.user.id === user?.id)
-
-        console.log(heartPost)
 
 
         const obj = {user: user?.id, post: post.post_id, reaction: heartPost?.id}
 
         if(heartPost){ // The user has liked the post
 
-            await deleteHeart(obj).then(result => dispatch({type: "decrementHeart", payload: post}))
+            await deleteHeart(heartPost.id).then(result => dispatch({type: "decrementHeart", payload: heartPost}))
 
         }
 
 
-        const result = await likePost(obj)
+        await likePost(obj).then( result => dispatch({type: 'addLikeReaction', payload: result})).catch(err => console.log(err))
 
         dispatch({type: 'incrementLike', payload: post})
-        dispatch({type: 'addLikeReaction', payload: result})
-
-        console.log(state.post)
 
     }
 
@@ -150,12 +155,10 @@ function Posts({post}: post){
 
         const obj = {user: user?.id, post: post.post_id, reaction: likedPost?.id}
 
-        console.log(likedPost, "liked post")
-
 
         if(likedPost){ // The user has liked the post
 
-            await deleteLike(obj).then(result => dispatch({type: "decrementLike", payload: post}))
+            await deleteLike(likedPost.id).then(result => dispatch({type: "decrementLike", payload: likedPost}))
 
         }
 
@@ -165,27 +168,24 @@ function Posts({post}: post){
 
         dispatch({type: 'addHeartReaction', payload: result})
 
-
-        console.log(result)
-
        
 
     }
 
     async function handlePostLikeRemove(event: React.FormEvent<HTMLButtonElement>){
 
-        
+    
         const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
 
         const likedPost = post.reaction.find(reaction => reaction.likes > 0 && reaction.user.id === user?.id)
 
-        console.log(likedPost)
 
-        
+        if(likedPost){
+                
+            await deleteLike(likedPost.id).then(result => dispatch({type: "decrementLike", payload: likedPost!}))
 
-        const obj = {user: user?.id, post: post.post_id, reaction: likedPost?.id}
+        }
 
-        await deleteLike(obj).then(result => dispatch({type: "decrementLike", payload: likedPost!}))
 
     }
 
@@ -199,10 +199,9 @@ function Posts({post}: post){
         const heartPost = post.reaction.find(reaction => reaction.hearts > 0 && reaction.user.id === user?.id)
 
         
-
-        const obj = {user: user?.id, post: post.post_id, reaction: heartPost?.id}
-
-        await deleteHeart(obj).then(result => dispatch({type: "decrementHeart", payload: post}))
+        if (heartPost){
+            await deleteHeart(heartPost.id).then(result => dispatch({type: "decrementHeart", payload: heartPost}))
+        }
 
 
 
@@ -264,24 +263,32 @@ function Posts({post}: post){
                         
                         <div className='d-flex post-title'>
 
-                            <div className='edit-button'>
+                            <div className='d-flex edit-button'>
 
-                                {user?.email === element.user?.email &&
+                                
+                                <IconButton color='secondary' data-post-id = {index} onClick={handleViewReactions}>
+                                    <Visibility></Visibility>
+                                    View all Reactions
+                                </IconButton>
+
+                                {user?.id === element.user?.id &&
 
                                     <div className='d-flex edit-delete-post-buttons'>
 
-                                        <IconButton color = 'success' data-post-id = {index} disabled = {element.user?.email !== user?.email} onClick = {handleClick}>
+                                        <IconButton color = 'success' data-post-id = {index} disabled = {element.user?.id !== user?.id} onClick = {handleClick}>
                                             <Edit></Edit>
                                             Edit Post
                                         </IconButton>
 
-                                        <IconButton color='error'data-post-id = {index} disabled = {element.user?.email !== user?.email} onClick = {handlePostDelete}>
+                                        <IconButton color='error'data-post-id = {index} disabled = {element.user?.id !== user?.id} onClick = {handlePostDelete}>
                                             <Delete></Delete>
                                             Delete Post
                                         </IconButton>
 
                                     </div>          
+                                
                                 }
+
                             
                                 </div>
 
@@ -395,6 +402,11 @@ function Posts({post}: post){
                     <ViewReplies /> 
                             
                         } 
+
+            
+            {state.viewReactions && 
+                    <ViewReactions />
+            }
 
          
                 

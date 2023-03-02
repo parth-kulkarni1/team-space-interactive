@@ -103,7 +103,7 @@ post_router.get('/posts', async function(req: Request, res: Response, next: Next
     try{
 
         const found = await myDataSource.getRepository(Post).createQueryBuilder("post").loadRelationCountAndMap("post.likeCount", "post.reaction.likes", "reaction", (qb) => qb.where('reaction.likes > 0')).loadRelationCountAndMap("post.heartsCount", "post.reaction.hearts", "reaction", (qb) => qb.where('reaction.hearts > 0'))
-        .leftJoinAndSelect("post.reaction", "reactions").leftJoin("reactions.user", "userx").addSelect(['userx.id'])
+        .leftJoinAndSelect("post.reaction", "reactions").leftJoin("reactions.user", "userx").addSelect(['userx.id', 'userx.firstName', 'userx.lastName', 'userx.profile_background', 'userx.cover_background', 'userx.email'])
         .leftJoinAndSelect("reactions.post", "postx").leftJoinAndSelect("post.reply", "reply").leftJoinAndSelect("reply.photo", "photoreply")
         .leftJoin("reply.user", "replyuser").addSelect(['replyuser.id', 'replyuser.cover_background', 'replyuser.profile_background', 'replyuser.firstName', 'replyuser.lastName'])
         .leftJoinAndSelect("reply.childComments", "replyChild1")
@@ -531,34 +531,46 @@ post_router.post('/post/reaction/heart', async function(req: Request, res: Respo
 
 })
 
-post_router.delete('/post/reaction/like/remove', async function (req: Request, res: Response, next: NextFunction){
+post_router.delete('/post/reaction/like/remove/:id', async function (req: Request, res: Response, next: NextFunction){
+
     
-    const reaction = await myDataSource.getRepository(Reactions).findOneBy({
-        id: req.body.reaction  
-    
-    })
+    try{
 
-    await myDataSource.getRepository(Reactions).remove(reaction) // The reaction is completly remove
+        const reaction = await myDataSource.getRepository(Reactions).findOneBy({
+            id: parseInt(req.params.id)
+        })
+        
 
+        await myDataSource.getRepository(Reactions).remove(reaction) // Removes the reply entity cascadely... 
 
-    res.json("success")
+        res.sendStatus(200)
+
+    }catch(err){
+        next(err)
+        res.sendStatus(500)
+    }
 
 
 })
 
-post_router.delete('/post/reaction/hearts/remove', async function (req: Request, res: Response, next: NextFunction){
+post_router.delete('/post/reaction/hearts/remove/:id', async function (req: Request, res: Response, next: NextFunction){
+
     
-    const reaction = await myDataSource.getRepository(Reactions).findOneBy({
-        id: req.body.reaction  
-    
-    })
+    try{
 
-    await myDataSource.getRepository(Reactions).remove(reaction) // The reaction is completly remove
+        const reaction = await myDataSource.getRepository(Reactions).findOneBy({
+            id: parseInt(req.params.id)
+        })
+        
 
-  
+        await myDataSource.getRepository(Reactions).remove(reaction) // Removes the reply entity cascadely... 
 
+        res.sendStatus(200)
 
-    res.json("success")
+    }catch(err){
+        next(err)
+        res.sendStatus(500)
+    }
 
 
 

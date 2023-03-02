@@ -138,7 +138,8 @@ const initalState: CurrentState = {
     reply: false, 
     currentPost: currentPostReset, 
     currentReplyOwner: null,
-    editReply: ''
+    editReply: '',
+    viewReactions: false
 }
 
 
@@ -150,7 +151,8 @@ export interface CurrentState{
     reply: boolean, 
     currentPost: postStructure,
     currentReplyOwner: replyOptional | null,
-    editReply: string
+    editReply: string,
+    viewReactions: boolean
    
 
 }
@@ -163,7 +165,7 @@ export type CurrentAction = {
     type: 'allPosts' | true | false | 'title' | 'resetPost' | 'body' | 
            'image'  | 'edit'| 'cloudinaryimage'|'reset'| 'localPost' | 'addDeleted' | 'updateEdited' | 'deletePost' | 'viewReplies' | 'currentPost' |'addReply'
            | 'replyOwner' | 'addChildReply' |'addParentReply' |'deleteReplyParent' | 'deleteReplyChild'| 'editReply' |'incrementLike' | 'incrementHeart'| 'decrementLike' |'addLikeReaction'
-           | 'addHeartReaction' | 'decrementHeart'
+           | 'addHeartReaction' | 'decrementHeart' |'viewReactions'
     payload: string | boolean | string[] | postStructure[] | getAllPostsResponse 
             | postUser | imageType | postStructureEdit | imageType[] | PostResponse | postStructure| PostEdit | reply | number | reply[] | null | reaction
 

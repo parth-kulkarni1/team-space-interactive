@@ -141,7 +141,7 @@ post_router.get('/posts', function (req, res, next) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).createQueryBuilder("post").loadRelationCountAndMap("post.likeCount", "post.reaction.likes", "reaction", function (qb) { return qb.where('reaction.likes > 0'); }).loadRelationCountAndMap("post.heartsCount", "post.reaction.hearts", "reaction", function (qb) { return qb.where('reaction.hearts > 0'); })
-                            .leftJoinAndSelect("post.reaction", "reactions").leftJoin("reactions.user", "userx").addSelect(['userx.id'])
+                            .leftJoinAndSelect("post.reaction", "reactions").leftJoin("reactions.user", "userx").addSelect(['userx.id', 'userx.firstName', 'userx.lastName', 'userx.profile_background', 'userx.cover_background', 'userx.email'])
                             .leftJoinAndSelect("reactions.post", "postx").leftJoinAndSelect("post.reply", "reply").leftJoinAndSelect("reply.photo", "photoreply")
                             .leftJoin("reply.user", "replyuser").addSelect(['replyuser.id', 'replyuser.cover_background', 'replyuser.profile_background', 'replyuser.firstName', 'replyuser.lastName'])
                             .leftJoinAndSelect("reply.childComments", "replyChild1")
@@ -583,40 +583,56 @@ post_router.post('/post/reaction/heart', function (req, res, next) {
         });
     });
 });
-post_router.delete('/post/reaction/like/remove', function (req, res, next) {
+post_router.delete('/post/reaction/like/remove/:id', function (req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var reaction;
+        var reaction, err_7;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).findOneBy({
-                        id: req.body.reaction
-                    })];
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).findOneBy({
+                            id: parseInt(req.params.id)
+                        })];
                 case 1:
                     reaction = _a.sent();
-                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).remove(reaction)]; // The reaction is completly remove
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).remove(reaction)]; // Removes the reply entity cascadely... 
                 case 2:
-                    _a.sent(); // The reaction is completly remove
-                    res.json("success");
-                    return [2 /*return*/];
+                    _a.sent(); // Removes the reply entity cascadely... 
+                    res.sendStatus(200);
+                    return [3 /*break*/, 4];
+                case 3:
+                    err_7 = _a.sent();
+                    next(err_7);
+                    res.sendStatus(500);
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
             }
         });
     });
 });
-post_router.delete('/post/reaction/hearts/remove', function (req, res, next) {
+post_router.delete('/post/reaction/hearts/remove/:id', function (req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var reaction;
+        var reaction, err_8;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).findOneBy({
-                        id: req.body.reaction
-                    })];
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).findOneBy({
+                            id: parseInt(req.params.id)
+                        })];
                 case 1:
                     reaction = _a.sent();
-                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).remove(reaction)]; // The reaction is completly remove
+                    return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(reaction_1.Reactions).remove(reaction)]; // Removes the reply entity cascadely... 
                 case 2:
-                    _a.sent(); // The reaction is completly remove
-                    res.json("success");
-                    return [2 /*return*/];
+                    _a.sent(); // Removes the reply entity cascadely... 
+                    res.sendStatus(200);
+                    return [3 /*break*/, 4];
+                case 3:
+                    err_8 = _a.sent();
+                    next(err_8);
+                    res.sendStatus(500);
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
             }
         });
     });
