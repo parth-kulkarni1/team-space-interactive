@@ -56,7 +56,7 @@ function ViewReplies(){
 
                 <ModalBody>
 
-                <CommentReplyA key = {1} reply={state.currentPost.reply}/>
+                <CommentReplyA reply={state.currentPost.reply}/>
 
 
                 </ModalBody>
@@ -159,7 +159,7 @@ function CommentReplyA({reply}: postReply){
                                             <Button variant="link" onClick = {() => {handleDelete(reply)}}>Delete Reply</Button>
                                             <Button variant="link" disabled = {(!reply.childComments)} 
                                                     onClick={(event) => {setActiveReply(String(reply.id)); 
-                                                                        dispatch({type: 'replyOwner', payload: reply});}}
+                                                                       ;}}
                                                                         >Reply</Button>
 
                                         </div>
@@ -170,7 +170,7 @@ function CommentReplyA({reply}: postReply){
 
                                             <Button variant="link" disabled = {!reply.childComments} onClick={(event) => {
                                                                                         setActiveReply(String(reply.id)); 
-                                                                                        dispatch({type: 'replyOwner', payload: reply}); }}
+                                                                                        ; }}
                                                                                         >Reply</Button>
 
                                         </div>

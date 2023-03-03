@@ -11,6 +11,8 @@ function ViewReactions(){
 
     const {state,dispatch} = useContext(PostContext);
 
+    const [showAll, setAllView] = useState<boolean>(true);
+
     const [showHearts, setHeartsView] = useState<boolean>(false);
 
     const [showLikes, setLikesView] = useState<boolean>(false);
@@ -24,6 +26,38 @@ function ViewReactions(){
 
         setLikesView(false)
 
+        setAllView(false)
+
+    }
+
+    function handleLikes(){
+
+        setAllView(false)
+
+        setHeartsView(false)
+
+        setLikesView(true)
+
+    }
+
+    function handleHeart(){
+
+        setAllView(false)
+
+        setLikesView(false)
+
+        setHeartsView(true)
+
+    }
+
+    function handleAll(){
+
+        setAllView(true)
+
+        setLikesView(false)
+
+        setHeartsView(false)
+
     }
 
 
@@ -32,19 +66,19 @@ function ViewReactions(){
 
     <Modal show = {state.viewReactions} centered = {true} onHide = {handleCloseModal}>
 
-        <ModalHeader closeButton></ModalHeader>
+        <ModalHeader title="Reactions" closeButton></ModalHeader>
 
         <div className="d-flex justify-content-center align-items-center p-3">
         
-            <IconButton>
-                <Groups color={state.viewReactions ? "primary" : "inherit"} fontSize="large"></Groups>    
+            <IconButton onClick={handleAll}>
+                <Groups color={showAll ? "primary" : "inherit"} fontSize="large"></Groups>    
             </IconButton>            
 
-            <IconButton onClick={() => setHeartsView(false)}>
+            <IconButton onClick={handleLikes} hidden = {state.currentPost.likeCount === 0}>
                 <ThumbUp color={showLikes ? "primary" : "inherit"}></ThumbUp>
             </IconButton>
 
-            <IconButton onClick={() => setHeartsView(true)}>
+            <IconButton onClick={handleHeart} hidden = {state.currentPost.heartsCount === 0}>
                     <Favorite color= {showHearts ? "error" : "inherit"}></Favorite>
             </IconButton>
         
@@ -55,7 +89,7 @@ function ViewReactions(){
 
 
 
-        {!showHearts && !showLikes ?
+        {!showHearts && !showLikes &&
 
             <ModalBody>
 
@@ -85,8 +119,9 @@ function ViewReactions(){
 
             </ModalBody>
         
-        : 
+        }
 
+        {showHearts &&
             
             <ModalBody>
             
@@ -101,7 +136,14 @@ function ViewReactions(){
 
                     {element.hearts > 0 &&
 
-                    <p> {element.user.firstName} </p> 
+                    
+                            <div className="d-flex align-items-center">
+
+                                <AdvancedImage key={element.user.id} cldImg={cld.image(element.user.profile_background)} className = 'user-profile-pic-post-style'></AdvancedImage>                            
+
+                                <p>{element.user.firstName} {element.user.lastName}</p> 
+
+                            </div> 
 
                     }
 
@@ -115,6 +157,45 @@ function ViewReactions(){
         </ModalBody>        
         
         }   
+
+
+        {showLikes &&
+            
+            <ModalBody>
+            
+            {state.currentPost.likeCount === 0 ?
+                <p>Be the first to like this post...</p>    
+            
+            :
+
+            state.currentPost.reaction.map((element) =>  
+
+                <div>
+
+                    {element.likes > 0 &&
+
+                        
+                            <div className="d-flex align-items-center">
+
+                                <AdvancedImage key={element.user.id} cldImg={cld.image(element.user.profile_background)} className = 'user-profile-pic-post-style'></AdvancedImage>                            
+
+                                <p>{element.user.firstName} {element.user.lastName}</p> 
+
+                            </div>
+
+                    }
+
+
+
+                </div>
+
+            )}
+
+
+        </ModalBody>        
+        
+        }   
+
 
 
 
