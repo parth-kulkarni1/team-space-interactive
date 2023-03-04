@@ -3,6 +3,7 @@ import { myDataSource } from "./app-data-source"
 import { router } from "./routes/UserRoute"
 import { Postrouter } from "./routes/PostRoute";
 import session = require('express-session');
+import { pagination } from "typeorm-pagination";
 require('dotenv').config()
 
 
@@ -20,7 +21,10 @@ myDataSource
 // create and setup express app
 const app = express()
 
+app.use(pagination)
+
 app.use(express.json({limit: '50mb'}))
+
 
 
 app.use(

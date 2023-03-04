@@ -22,7 +22,7 @@ function Reply(){
 
     const [hover, setHover] = useState<boolean>(false)
 
-    const [reply, setReply] = useState<string>(state.editReply)
+    const [reply, setReply] = useState<string>('')
 
  
 

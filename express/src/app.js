@@ -5,6 +5,7 @@ var app_data_source_1 = require("./app-data-source");
 var UserRoute_1 = require("./routes/UserRoute");
 var PostRoute_1 = require("./routes/PostRoute");
 var session = require("express-session");
+var typeorm_pagination_1 = require("typeorm-pagination");
 require('dotenv').config();
 // establish database connection
 app_data_source_1.myDataSource
@@ -17,6 +18,7 @@ app_data_source_1.myDataSource
 });
 // create and setup express app
 var app = express();
+app.use(typeorm_pagination_1.pagination);
 app.use(express.json({ limit: '50mb' }));
 app.use(session({
     secret: process.env.EXPRESS_SECERT,

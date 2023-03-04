@@ -24,7 +24,8 @@ import ChangePassword from "./Components/ProfilePage/ChangePassword";
 
 import Home from "./Components/Home/Home";
 import { PostsContextProvider } from "./Components/Contexts/PostContext";
-import PostList from "./Components/Post/Posts";
+
+import ProfileView from "./Components/ProfileView/ProfileView";
 
 /* ------------------------------------ */
 
@@ -57,7 +58,8 @@ function App() {
           <Route element = {<PrivateRoutes />} >
             <Route path="/Profile" element = {<ProfilePage />}></Route>
             <Route path="/ChangePassword" element = {<ChangePassword />}></Route>
-              <Route path = "/Home" element = {<Home />}></Route>
+            <Route path = "/Home" element = {<Home />}></Route>
+            <Route path="/Profileview/user/:userId" element = {<ProfileView />}></Route>
           
           </Route>
           

@@ -8,6 +8,8 @@ import { User } from "../entity/User/user";
 import { Reactions } from "../entity/Reactions/reaction";
 import { selectFields } from "express-validator/src/select-fields";
 import { getRepository } from "typeorm";
+import { paginate } from "typeorm-pagination/dist/helpers/pagination";
+
 require("dotenv").config();
 
 
@@ -98,7 +100,9 @@ post_router.post('/post/create', body('title').exists({checkFalsy: true}), body(
 })
 
 
+
 post_router.get('/posts', async function(req: Request, res: Response, next: NextFunction){
+
 
     try{
 
@@ -191,49 +195,32 @@ async function(req: Request, res: Response, next: NextFunction){
 
         }
 
-
-        const results = await myDataSource.getRepository(Post).find({
-            relations: ['user', 'reply', 'reply.user', 'reply.photo', 'reply.childComments', 'reply.childComments.user', 'reply.childComments.parentComment',
-                        'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo', 'photo'
-                      ], 
-            select: {
-                reply: {
-                    body: true, 
-                    createdAt: true, 
-                    updatedAt: true,
-                    id: true,
-                    user: {
-                        firstName: true, 
-                        lastName: true, 
-                        cover_background: true, 
-                        profile_background: true, 
-                        email: true,
-                        id: true
-                    }, 
-                    parentComment: {
-                        body: true, 
-                        createdAt: true, 
-                        updatedAt: true
-                    }
-                    
-                }
-                
-            } ,order: {
-                post_id: "DESC",
-                reply: {
-                    id: "DESC"
-                }
-            },
-            where: {
-                post_id: req.body.post.post_id
-            }
-
-        })
+        const query = await myDataSource.getRepository(Post).createQueryBuilder("post").loadRelationCountAndMap("post.likeCount", "post.reaction.likes", "reaction", (qb) => qb.where('reaction.likes > 0'))
+        .loadRelationCountAndMap("post.heartsCount", "post.reaction.hearts", "reaction", (qb) => qb.where('reaction.hearts > 0'))
+        .leftJoin("post.user", "userpost")
+        .addSelect(['userpost.firstName', 'userpost.lastName',
+                    'userpost.cover_background', 
+                    'userpost.profile_background', 
+                    'userpost.email', 'userpost.id'])
+        .leftJoinAndSelect('post.reply', 'reply')
+        .leftJoin('reply.user', 'userreply').addSelect([
+            'userreply.firstName', 'userreply.lastName',
+            'userreply.cover_background', 
+            'userreply.profile_background', 
+            'userreply.email', 'userreply.id'
+        ]).leftJoinAndSelect('reply.photo', "replyphoto")
+        .leftJoinAndSelect("post.photo", "photo")
+        .leftJoinAndSelect("post.reaction", "reactions")
+        .leftJoinAndSelect("reactions.post", "postd")
+        .leftJoin("reactions.user", "user").addSelect(
+            ['user.firstName', 'user.lastName',
+            'user.cover_background', 
+            'user.profile_background', 
+            'user.email', 'user.id']).where("post.post_id =:id", {id: req.body.post.post_id})
+            .getMany()
 
         
-        
-
-        res.json(results[0])
+        res.json(query[0])
 
         
 

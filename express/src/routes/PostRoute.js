@@ -165,7 +165,7 @@ post_router.get('/posts', function (req, res, next) {
 });
 post_router.put('/post/update', (0, express_validator_1.body)('post.title').exists({ checkFalsy: true }), (0, express_validator_1.body)('post.body').exists({ checkFalsy: true }), function (req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var errors, post, obj, result, i, image, i, uploadedResponse, images, results, err_3;
+        var errors, post, obj, result, i, image, i, uploadedResponse, images, query_2, err_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -233,43 +233,31 @@ post_router.put('/post/update', (0, express_validator_1.body)('post.title').exis
                 case 13:
                     i++;
                     return [3 /*break*/, 9];
-                case 14: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).find({
-                        relations: ['user', 'reply', 'reply.user', 'reply.photo', 'reply.childComments', 'reply.childComments.user', 'reply.childComments.parentComment',
-                            'reply.childComments.photo', 'reply.childComments.childComments', 'reply.childComments.childComments.user', 'reply.childComments.childComments.photo', 'photo'
-                        ],
-                        select: {
-                            reply: {
-                                body: true,
-                                createdAt: true,
-                                updatedAt: true,
-                                id: true,
-                                user: {
-                                    firstName: true,
-                                    lastName: true,
-                                    cover_background: true,
-                                    profile_background: true,
-                                    email: true,
-                                    id: true
-                                },
-                                parentComment: {
-                                    body: true,
-                                    createdAt: true,
-                                    updatedAt: true
-                                }
-                            }
-                        }, order: {
-                            post_id: "DESC",
-                            reply: {
-                                id: "DESC"
-                            }
-                        },
-                        where: {
-                            post_id: req.body.post.post_id
-                        }
-                    })];
+                case 14: return [4 /*yield*/, app_data_source_1.myDataSource.getRepository(post_1.Post).createQueryBuilder("post").loadRelationCountAndMap("post.likeCount", "post.reaction.likes", "reaction", function (qb) { return qb.where('reaction.likes > 0'); })
+                        .loadRelationCountAndMap("post.heartsCount", "post.reaction.hearts", "reaction", function (qb) { return qb.where('reaction.hearts > 0'); })
+                        .leftJoin("post.user", "userpost")
+                        .addSelect(['userpost.firstName', 'userpost.lastName',
+                        'userpost.cover_background',
+                        'userpost.profile_background',
+                        'userpost.email', 'userpost.id'])
+                        .leftJoinAndSelect('post.reply', 'reply')
+                        .leftJoin('reply.user', 'userreply').addSelect([
+                        'userreply.firstName', 'userreply.lastName',
+                        'userreply.cover_background',
+                        'userreply.profile_background',
+                        'userreply.email', 'userreply.id'
+                    ]).leftJoinAndSelect('reply.photo', "replyphoto")
+                        .leftJoinAndSelect("post.photo", "photo")
+                        .leftJoinAndSelect("post.reaction", "reactions")
+                        .leftJoinAndSelect("reactions.post", "postd")
+                        .leftJoin("reactions.user", "user").addSelect(['user.firstName', 'user.lastName',
+                        'user.cover_background',
+                        'user.profile_background',
+                        'user.email', 'user.id']).where("post.post_id =:id", { id: req.body.post.post_id })
+                        .getMany()];
                 case 15:
-                    results = _a.sent();
-                    res.json(results[0]);
+                    query_2 = _a.sent();
+                    res.json(query_2[0]);
                     return [3 /*break*/, 17];
                 case 16:
                     err_3 = _a.sent();

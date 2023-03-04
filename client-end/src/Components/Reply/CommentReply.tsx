@@ -22,15 +22,11 @@ function CommentReply(){
 
     const [hover, setHover] = useState<boolean>(false)
 
-    const [reply, setReply] = useState<string>(state.currentReplyOwner?.body!)
-
- 
 
     async function handleSubmitReply(event: React.FormEvent<HTMLButtonElement>){
 
-        console.log(reply)
 
-        const replyObj = {reply: reply, reply_id: state.currentReplyOwner?.id as number, image: image, user: user?.id as number}
+        const replyObj = {reply: state.editReply, reply_id: state.currentReplyOwner?.id as number, image: image, user: user?.id as number}
 
         const result = await toast.promise(createReplyToReply(replyObj), {
 
@@ -55,8 +51,6 @@ function CommentReply(){
         }
 
         
-        setReply('')
-
         setHover(false)
 
         setImage('')
@@ -91,26 +85,37 @@ function CommentReply(){
     return(
         <div className="d-flex flex-column text-area-container p-2">
             
+
             {!!state.currentReplyOwner && 
 
              <>
 
+
+
             <div className = "text-area-reply">
+
+
                 <textarea className="form-control form-control-sm comment-text-area" 
                           placeholder= {"Write your reply to " + state.currentReplyOwner?.user?.firstName 
                                         + " " + state.currentReplyOwner?.user?.lastName}
-                          value={reply}
-                          onChange={(e) => setReply(e.target.value)}
+                          value={state.editReply}
+                          onChange={(e) => dispatch({type: 'editReply', payload: e.target.value})}
                           autoFocus
                           
                                                     
-                          ></textarea> 
+                ></textarea> 
+
+            
+
+            
+
+
 
                 <div className="d-flex justify-content-between p-2">
 
                 <p className="text-muted">Press Submit Button to upload your reply..</p>
 
-                <p className="text-muted">{reply.length} / {150}</p>
+                <p className="text-muted">{state.editReply.length} / {150}</p>
 
                 </div>
 
@@ -139,7 +144,7 @@ function CommentReply(){
                     
                     <Tooltip title="Submit Post">
                             <span>
-                                <IconButton onClick={handleSubmitReply} disabled = {reply.length === 0 || reply.length > 150 }>
+                                <IconButton onClick={handleSubmitReply} disabled = {state.editReply.length === 0 || state.editReply.length > 150 }>
                                     <AddBox></AddBox>
                                 </IconButton>
                             </span>     
@@ -188,7 +193,9 @@ function CommentReply(){
 
             </>
 
-            }
+}
+
+            
 
 
 

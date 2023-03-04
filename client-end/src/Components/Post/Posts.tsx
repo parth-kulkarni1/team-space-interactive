@@ -1,6 +1,6 @@
 
-import React, {useContext, useEffect ,useMemo, useState} from 'react'
-import { PostContext, reaction } from '../Contexts/PostContext'
+import React, {useContext, useEffect ,useMemo} from 'react'
+import { PostContext } from '../Contexts/PostContext'
 import { postStructure } from "../Contexts/PostContext"
 import { deleteHeart, deleteLike, getAllPosts, likeHeart, likePost } from '../AxiosCommands/Post/AxiosPostCommands'
 import { UserContext } from '../Contexts/UserContext'
@@ -9,12 +9,12 @@ import { deletePost } from '../AxiosCommands/Post/AxiosPostCommands'
 import PostModal from '../Home/PostModal'
 import ViewReplies from '../Reply/ViewReply'
 import ViewReactions from '../ViewReactions/ViewReactions'
+import {useNavigate } from 'react-router-dom'
 
 
 import { AdvancedImage, lazyload } from '@cloudinary/react'
 import moment from 'moment'
 import ReactMarkDown from 'react-markdown'
-import { Button } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 import { Delete, Edit, Favorite, QuestionAnswer, ThumbUp, Visibility } from '@mui/icons-material'
 import { IconButton } from '@mui/material'
@@ -59,6 +59,8 @@ function Posts({post}: post){
     const {user} = useContext(UserContext)
 
     const {state, dispatch} = useContext(PostContext)
+
+    const navigate = useNavigate();
 
 
     function handleClick(event: React.FormEvent<HTMLButtonElement>){
@@ -203,9 +205,16 @@ function Posts({post}: post){
             await deleteHeart(heartPost.id).then(result => dispatch({type: "decrementHeart", payload: heartPost}))
         }
 
+    }
 
 
+    function handleProfileView(event: React.MouseEvent<HTMLDivElement, MouseEvent>){
 
+        const post = state.post[parseInt(event.currentTarget.dataset.postId!)]
+
+        dispatch({type: 'currentPost', payload: post})
+
+        navigate(`/Profileview/user/${post.user?.id}`)
 
     }
 
@@ -229,7 +238,7 @@ function Posts({post}: post){
 
                     <div className='d-flex'>
 
-                        <div className='d-flex align-items-center'>
+                        <div className='d-flex align-items-center' data-post-id = {index}  onClick={(e) => handleProfileView(e)}>
 
                             <AdvancedImage key={element.user?.email} cldImg={cld.image(element.user?.profile_background)} className = 'user-profile-pic-post-style' 
                                             plugins={[lazyload({rootMargin: '0px',
@@ -257,7 +266,7 @@ function Posts({post}: post){
                         </div>
 
 
-                </div>
+                    </div>
 
                     <div>
                         
@@ -416,7 +425,7 @@ function Posts({post}: post){
 
     )
 
-    }, [state.post, state.edit, state.currentPost, state.reply])
+    }, [state.post, state.edit, state.viewReactions, state.currentPost, state.reply])
 
   
 

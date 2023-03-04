@@ -1,4 +1,4 @@
-import React, {useContext, useState, useMemo} from "react"
+import React, {useContext, useState, useEffect} from "react"
 import { PostContext, reply } from "../Contexts/PostContext"
 import './ViewReply.css'
 import { UserContext } from "../Contexts/UserContext"
@@ -91,6 +91,9 @@ function CommentReplyA({reply}: postReply){
 
     const [activeReply, setActiveReply] = useState<string>('')
 
+
+
+
     async function handleDelete(reply: reply){
 
         await toast.promise(deleteReply(reply.id), {
@@ -115,7 +118,34 @@ function CommentReplyA({reply}: postReply){
 
     }
 
-    return useMemo(() => {
+    function handleEditReply(event: React.FormEvent<HTMLButtonElement>, reply: any){
+
+        
+        setActiveReply(String(reply.id))
+
+        dispatch({type: 'replyOwner', payload: reply})
+
+        dispatch({type: "editReply", payload: reply.body})
+
+
+    }
+
+    function handleReply(event: React.FormEvent<HTMLButtonElement>, reply: any){
+
+            
+        setActiveReply(String(reply.id));
+
+        dispatch({type: 'replyOwner', payload: reply})
+
+        dispatch({type: "editReply", payload: ''})
+
+        
+        
+
+
+
+    }
+
     
     return(
             
@@ -155,12 +185,17 @@ function CommentReplyA({reply}: postReply){
 
                                         <div>
                                             
-                                            <Button variant="link" onClick={() => { setActiveReply(String(reply.id));dispatch({type: 'replyOwner', payload: reply})}}>Edit Reply</Button>
-                                            <Button variant="link" onClick = {() => {handleDelete(reply)}}>Delete Reply</Button>
+                                            <Button variant="link" 
+                                                    onClick={(e) => handleEditReply(e, reply)}
+                                                    >Edit Reply</Button>
+
+                                            <Button variant="link" 
+                                                    onClick = {() => {handleDelete(reply)}}
+                                                    >Delete Reply</Button>
+
                                             <Button variant="link" disabled = {(!reply.childComments)} 
-                                                    onClick={(event) => {setActiveReply(String(reply.id)); 
-                                                                       ;}}
-                                                                        >Reply</Button>
+                                                    onClick={(e) => {handleReply(e, reply)}}
+                                                    >Reply</Button>
 
                                         </div>
 
@@ -200,6 +235,8 @@ function CommentReplyA({reply}: postReply){
                                     <CommentReply key={reply.id}/>
                                 }
 
+                            
+
 
                         </div>
 
@@ -226,10 +263,8 @@ function CommentReplyA({reply}: postReply){
             </div>
 
             
-            
-
-                
-            )}, [activeReply, state.currentPost])}
+        
+            )}
 
 
 

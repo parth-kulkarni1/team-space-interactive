@@ -71,15 +71,18 @@ function ViewReactions(){
         <div className="d-flex justify-content-center align-items-center p-3">
         
             <IconButton onClick={handleAll}>
-                <Groups color={showAll ? "primary" : "inherit"} fontSize="large"></Groups>    
+                <Groups color={showAll ? "primary" : "inherit"} fontSize="large"></Groups> 
+                All   
             </IconButton>            
 
             <IconButton onClick={handleLikes} hidden = {state.currentPost.likeCount === 0}>
                 <ThumbUp color={showLikes ? "primary" : "inherit"}></ThumbUp>
+                Likes
             </IconButton>
 
             <IconButton onClick={handleHeart} hidden = {state.currentPost.heartsCount === 0}>
-                    <Favorite color= {showHearts ? "error" : "inherit"}></Favorite>
+                <Favorite color= {showHearts ? "error" : "inherit"}></Favorite>
+                Hearts    
             </IconButton>
         
         </div>
@@ -104,11 +107,15 @@ function ViewReactions(){
 
                     <div>
 
-                            <div className="d-flex align-items-center">
+                            <div className="d-flex flex-column p-1">
 
-                                <AdvancedImage key={element.user.id} cldImg={cld.image(element.user.profile_background)} className = 'user-profile-pic-post-style'></AdvancedImage>                            
+                                <div className="d-flex align-items-center p-1 view-reactions-gap">
+                                    <AdvancedImage key={element.user.id} cldImg={cld.image(element.user.profile_background)} className = 'user-profile-pic-post-style'></AdvancedImage>                            
 
-                                <p>{element.user.firstName} {element.user.lastName}</p> 
+                                    <p>{element.user.firstName} {element.user.lastName}</p> 
+
+                                </div>
+
 
                             </div>
 
