@@ -57,6 +57,7 @@ export type post_obj_user = {
     firstName: string, 
     lastName: string, 
     profile_background: string, 
+    cover_background: string
     email: string,
 }
 

@@ -59,7 +59,7 @@ function App() {
             <Route path="/Profile" element = {<ProfilePage />}></Route>
             <Route path="/ChangePassword" element = {<ChangePassword />}></Route>
             <Route path = "/Home" element = {<Home />}></Route>
-            <Route path="/Profileview/user/:userId" element = {<ProfileView />}></Route>
+            <Route path="/Profileview/user/:id" element = {<ProfileView />}></Route>
           
           </Route>
           
